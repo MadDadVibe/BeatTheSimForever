@@ -4,8 +4,9 @@ import type { SimJob } from './types';
 export type WorkerRequest = { id: number; simBase: string } & (
   | { type: 'load' }
   | { type: 'sim'; job: SimJob }
+  | { type: 'stats'; request: Record<string, unknown> }
   | { type: 'liveStart'; request: Record<string, unknown>; seed: number; countdown: number }
-  | { type: 'liveAdvance'; to: number }
+  | { type: 'liveAdvance'; to: number; target: number }
   | { type: 'liveCast'; index: number; target: number }
 );
 

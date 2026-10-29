@@ -6,7 +6,7 @@ import { runJob, type RaidSimJson } from './run';
 import type { WorkerRequest } from './protocol';
 
 declare const Go: new () => { importObject: WebAssembly.Imports; run(instance: WebAssembly.Instance): Promise<void> };
-type Engine = LiveEngine & { raidSimJson: RaidSimJson };
+type Engine = LiveEngine & { raidSimJson: RaidSimJson; statsJson: (json: string) => string };
 
 let ready: Promise<Engine> | null = null;
 // simBase: the site's address; the engine's files are under sim/ there.
@@ -32,8 +32,14 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
     switch (r.type) {
       case 'load': result = true; break;
       case 'sim': result = runJob(engine.raidSimJson, r.job); break;
+      case 'stats': {
+        const out = JSON.parse(engine.statsJson(JSON.stringify({ request: r.request }))) as { stats?: number[]; error?: string };
+        if (out.error) throw new Error(out.error);
+        result = out.stats;
+        break;
+      }
       case 'liveStart': result = live.start(r.request, r.seed, r.countdown); break;
-      case 'liveAdvance': result = live.advance(r.to); break;
+      case 'liveAdvance': result = live.advance(r.to, r.target); break;
       case 'liveCast': result = live.cast(r.index, r.target); break;
     }
     self.postMessage({ id, result });

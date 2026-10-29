@@ -141,6 +141,8 @@ func playStart(in startIn) (any, error) {
 type advanceIn struct {
 	// Run the fight up to this time (seconds since the pull; negative before it).
 	To float64 `json:"to"`
+	// The boss the player aims at, for the hint.
+	Target int `json:"target"`
 }
 
 // playAdvance runs the fight to the given time and reports what happened since the last call and where things stand.
@@ -150,6 +152,8 @@ func playAdvance(in advanceIn) (any, error) {
 		return nil, fmt.Errorf("no fight started")
 	}
 	s := f.sim
+	targets := s.Encounter.TargetUnits
+	f.player.CurrentTarget = targets[min(max(in.Target, 0), len(targets)-1)]
 	finished := f.finished()
 	target := time.Duration(in.To * float64(time.Second))
 	if !finished && target > s.CurrentTime {
@@ -296,7 +300,38 @@ func (f *liveFight) state() map[string]any {
 		targets = append(targets, targetState{Auras: auras(s, t)})
 	}
 	state["targets"] = targets
+	if hint := f.hint(); hint != "" {
+		state["hint"] = hint
+	}
 	state["damageTaken"] = s.Encounter.DamageTaken
 	state["health"] = s.Encounter.EndFightAtHealth
 	return state
+}
+
+// hint is the spell the rotation would cast next, as soon as the player is free: the global cooldown, a cast and a
+// channel are taken as over for the question, then put back. Empty without a rotation or before the pull.
+func (f *liveFight) hint() string {
+	s, p := f.sim, f.player
+	if p.Rotation == nil || s.CurrentTime < 0 {
+		return ""
+	}
+	gcd, hardcast, channel := *p.GCD, p.Hardcast.Expires, p.ChanneledDot
+	*p.GCD = core.Timer(0)
+	if p.Hardcast.Expires > s.CurrentTime {
+		p.Hardcast.Expires = s.CurrentTime
+	}
+	p.ChanneledDot = nil
+	defer func() { *p.GCD, p.Hardcast.Expires, p.ChanneledDot = gcd, hardcast, channel }()
+
+	for _, action := range p.Rotation.PriorityList() {
+		if !action.IsReady(s) {
+			continue
+		}
+		for _, spell := range action.GetAllSpells() {
+			if spell.IsReady(s) && spell.Flags.Matches(core.SpellFlagAPL) {
+				return key(spell.ActionID)
+			}
+		}
+	}
+	return ""
 }

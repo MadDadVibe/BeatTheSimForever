@@ -46,6 +46,8 @@ function readSetup(): FightSetup {
     targets: Number(field<HTMLSelectElement>('targets').value),
     fight,
     countdown: 5,
+    rotation: customRotation ?? currentClass().defaultRotation,
+    hints: field<HTMLInputElement>('hints').checked,
   };
 }
 
@@ -64,7 +66,9 @@ async function play(setup: FightSetup) {
   try {
     const log = await runFight(stage, setup);
     app.classList.remove('in-fight');
-    await showResults(stage, log, customRotation ?? setup.cls.defaultRotation, () => void play(setup), showSetup);
+    // The hint may have been switched in the fight; the next one starts the same way.
+    const again = { ...setup, hints: readHints() };
+    await showResults(stage, log, setup.rotation, () => void play(again), showSetup);
   } catch (err) {
     showSetup();
     status.textContent = `Fehler: ${err instanceof Error ? err.message : err}`;
@@ -86,6 +90,18 @@ field<HTMLInputElement>('rotation').addEventListener('change', async () => {
     customRotation = null;
     status.textContent = `Rota nicht lesbar: ${err instanceof Error ? err.message : err}`;
   }
+});
+
+function readHints(): boolean {
+  try {
+    return localStorage.getItem('hints') === '1';
+  } catch {
+    return false;
+  }
+}
+field<HTMLInputElement>('hints').checked = readHints();
+field<HTMLInputElement>('hints').addEventListener('change', () => {
+  try { localStorage.setItem('hints', field<HTMLInputElement>('hints').checked ? '1' : '0'); } catch { /* not remembered */ }
 });
 
 field<HTMLSelectElement>('class').innerHTML = CLASSES.map((c) => `<option value="${c.key}">${c.name}</option>`).join('');

@@ -7,9 +7,13 @@ Version 1 is for Shadow Priest. Later versions add the other classes.
 
 ## Playing
 
-Pick a race, one to three bosses and a fight (a set time, or until the bosses are dead), then press your spells:
-tap the buttons, or use the keys 1 to 0, -, =, Q, E, R. Tap a boss (or press Tab or F1 to F3) to aim at it. A
-5-second countdown before the pull lets you precast. A spell pressed shortly before the global cooldown or a cast ends
+Pick a race, one to three bosses and a fight (a set time, or until the bosses are dead). Before the fight you see
+the character the sim plays (talents, stats with gear and buffs, gear, consumables) and can rearrange your action bar:
+drag a spell onto another to swap them, point at a spell and press a key to bind it (Backspace clears it). Your bar is
+remembered in this browser. Press the space bar or "Bereit" to start a 5-second countdown in which you may precast.
+
+In the fight, tap the buttons or use your keys. Tap a boss (or press Tab or F1 to F3) to aim at it. The hint, which
+you can switch on and off, lights up the spell the sim's rotation would cast next. A spell pressed shortly before the global cooldown or a cast ends
 goes off right after it, and a new spell during Mind Flay clips the channel.
 
 After the fight the sim plays the same fight a thousand times. The results show your DPS against the sim's, what cost

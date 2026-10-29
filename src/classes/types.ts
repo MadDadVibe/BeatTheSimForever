@@ -18,6 +18,8 @@ export interface ClassModule {
   /** File name of the sim's profiles for this class (public/sim/presets/<key>.json). */
   key: string;
   name: string;
+  /** The talent tree the spec lives in, as the sim names it (e.g. "Shadow" for "Shadow Magic"). */
+  spec: string;
   /** Race used when nothing else is picked; one of the keys in the profiles file. */
   defaultRace: string;
   /** The action bar, in order. Buttons the character does not have (another race's racial, say) are left out. */
@@ -25,6 +27,8 @@ export interface ClassModule {
   /** Effects shown on each boss (the class's DoTs) and on the player (its buffs), in this order. */
   targetAuras: string[];
   playerAuras: string[];
+  /** The character stats worth showing for this spec, by the sim's names (Intellect, SpellCrit, …). */
+  stats: string[];
   /** What the review after a fight looks at. */
   review: ReviewConfig;
   /** The rotation the sim plays unless you load your own. */
