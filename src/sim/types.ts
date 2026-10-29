@@ -47,9 +47,10 @@ export interface SpellStats {
 
 /** One thing that happened in the first simulated fight, read from the sim's combat log. */
 export type TimelineEvent =
-  | { t: number; type: 'cast'; key: string; cost: number; castTime: number }
+  /** effective: how long the cast keeps you busy (its cast time or the global cooldown, whichever is longer). */
+  | { t: number; type: 'cast'; key: string; cost: number; castTime: number; effective: number }
   | { t: number; type: 'damage'; key: string; target: number; amount: number; crit: boolean; tick: boolean }
-  | { t: number; type: 'auraOn' | 'auraOff'; key: string; target: number | null }
+  | { t: number; type: 'auraOn' | 'auraOff' | 'auraRefresh'; key: string; target: number | null }
   | { t: number; type: 'mana'; mana: number };
 
 export interface SimSummary {

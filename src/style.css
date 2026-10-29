@@ -103,3 +103,25 @@ table.compare { width: 100%; border-collapse: collapse; font-size: 0.9rem; margi
 @media (min-width: 700px) {
   .action-bar { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
 }
+
+/* Review */
+.results h2 { font-size: 1.05rem; margin: 24px 0 8px; }
+.small { font-size: 0.8rem; }
+.good { color: var(--good); }
+.bad { color: var(--bad); }
+.findings { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.finding { display: flex; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
+.finding img, .finding .ph { width: 36px; height: 36px; border-radius: 6px; flex: none; background: var(--panel-2); }
+.finding div { flex: 1; min-width: 0; }
+.finding strong { display: inline-block; margin-right: 6px; }
+.finding .cost { float: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.finding p { margin: 2px 0 0; font-size: 0.9rem; color: var(--muted); }
+.finding .tip { color: var(--text); }
+.lanes { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px 0; -webkit-overflow-scrolling: touch; }
+.lanes-inner { position: relative; padding-left: 40px; }
+.lane { position: relative; height: 30px; margin-bottom: 6px; }
+.lane-name { position: sticky; left: 0; z-index: 1; display: inline-block; width: 36px; margin-left: -40px; padding-left: 6px; line-height: 30px; font-size: 0.8rem; color: var(--muted); background: var(--panel); }
+.span { position: absolute; top: 0; height: 26px; border-radius: 4px; background: var(--panel-2) left center / 26px 26px no-repeat; box-shadow: inset 0 0 0 1px var(--line); }
+.axis { position: relative; height: 16px; }
+.mark { position: absolute; font-size: 0.7rem; color: var(--muted); transform: translateX(-50%); }
+.mark::before { content: ''; position: absolute; left: 50%; top: -6px; height: 4px; border-left: 1px solid var(--line); }

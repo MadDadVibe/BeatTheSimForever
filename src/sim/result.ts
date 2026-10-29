@@ -29,19 +29,25 @@ export function parseTimeline(logs: string, playerName: string): TimelineEvent[]
     if (!m) continue;
     const t = Number(m[1]);
     const rest = m[2];
+    let x2: RegExpMatchArray | null;
     if (rest.startsWith(me)) {
       const body = rest.slice(me.length).trim();
       let x: RegExpMatchArray | null;
-      if ((x = body.match(/^Casting (\{[^}]*\}) \(Cost = ([\d.]+), Cast Time = ([\d.]+)(m?s)/))) {
-        events.push({ t, type: 'cast', key: logKey(x[1]), cost: Number(x[2]), castTime: Number(x[3]) / (x[4] === 'ms' ? 1000 : 1) });
+      if ((x = body.match(/^Casting (\{[^}]*\}) \(Cost = ([\d.]+), Cast Time = ([\d.]+)(m?s), Effective Time = ([\d.]+)(m?s)/))) {
+        events.push({
+          t, type: 'cast', key: logKey(x[1]), cost: Number(x[2]),
+          castTime: Number(x[3]) / (x[4] === 'ms' ? 1000 : 1),
+          effective: Number(x[5]) / (x[6] === 'ms' ? 1000 : 1),
+        });
       } else if ((x = body.match(/^\[Target \d+\] (\{[^}]*\}) (tick )?(Hit|Crit)\w* for ([\d.]+) damage/))) {
         const amount = Number(x[4]);
         if (amount > 0) events.push({ t, type: 'damage', key: logKey(x[1]), target: targetIndex(body) ?? 0, amount, crit: x[3] === 'Crit', tick: !!x[2] });
       } else if ((x = body.match(/^(?:Spent|Gained) [\d.]+ mana from .* --> ([\d.]+)\)/))) {
         events.push({ t, type: 'mana', mana: Number(x[1]) });
       }
-    } else if (/^\[Target \d+\] Aura (gained|faded):/.test(rest)) {
-      events.push({ t, type: rest.includes('gained') ? 'auraOn' : 'auraOff', key: logKey(rest), target: targetIndex(rest) });
+    } else if ((x2 = rest.match(/^\[Target \d+\] Aura (gained|faded|refreshed):/))) {
+      const type = x2[1] === 'gained' ? 'auraOn' : x2[1] === 'faded' ? 'auraOff' : 'auraRefresh';
+      events.push({ t, type, key: logKey(rest), target: targetIndex(rest) });
     }
   }
   return events;

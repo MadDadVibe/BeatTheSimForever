@@ -3,20 +3,84 @@
   "name": "Shadow Priest",
   "defaultRace": "undead",
   "bar": [
-    { "key": "spell:10894", "short": "SW:P" },
-    { "key": "spell:10947", "short": "MB" },
-    { "key": "spell:18807", "short": "MF" },
-    { "key": "spell:19280", "short": "DP" },
-    { "key": "spell:1309636", "short": "SW:D" },
-    { "key": "spell:14751", "short": "IF" },
-    { "key": "spell:1277328", "short": "DS" },
-    { "key": "spell:19305", "short": "Star" },
-    { "key": "spell:1259799", "short": "Elune" },
-    { "key": "spell:1259823", "short": "Eureka" },
-    { "key": "spell:15473", "short": "Form" },
-    { "key": "item:250937", "short": "Pot" },
-    { "key": "item:12662", "short": "Rune" }
+    {
+      "key": "spell:10894",
+      "short": "SW:P"
+    },
+    {
+      "key": "spell:10947",
+      "short": "MB"
+    },
+    {
+      "key": "spell:18807",
+      "short": "MF"
+    },
+    {
+      "key": "spell:19280",
+      "short": "DP"
+    },
+    {
+      "key": "spell:1309636",
+      "short": "SW:D"
+    },
+    {
+      "key": "spell:14751",
+      "short": "IF"
+    },
+    {
+      "key": "spell:1277328",
+      "short": "DS"
+    },
+    {
+      "key": "spell:19305",
+      "short": "Star"
+    },
+    {
+      "key": "spell:1259799",
+      "short": "Elune"
+    },
+    {
+      "key": "spell:1259823",
+      "short": "Eureka"
+    },
+    {
+      "key": "spell:15473",
+      "short": "Form"
+    },
+    {
+      "key": "item:250937",
+      "short": "Pot"
+    },
+    {
+      "key": "item:12662",
+      "short": "Rune"
+    }
   ],
-  "targetAuras": ["spell:10894", "spell:19280", "spell:18807"],
-  "playerAuras": ["spell:15473", "spell:14751", "spell:15258", "spell:1277328", "item:250937"]
+  "targetAuras": [
+    "spell:10894",
+    "spell:19280",
+    "spell:18807"
+  ],
+  "playerAuras": [
+    "spell:15473",
+    "spell:14751",
+    "spell:15258",
+    "spell:1277328",
+    "item:250937"
+  ],
+  "review": {
+    "dots": [
+      "spell:10894",
+      "spell:19280"
+    ],
+    "channel": {
+      "key": "spell:18807",
+      "ticks": 3,
+      "seconds": 3
+    },
+    "keepOnCooldown": [
+      "spell:10947",
+      "spell:1309636"
+    ]
+  }
 }
