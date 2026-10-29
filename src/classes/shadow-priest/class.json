@@ -1,6 +1,7 @@
 {
   "key": "shadow-priest",
   "name": "Shadow Priest",
+  "spec": "Shadow",
   "defaultRace": "undead",
   "bar": [
     {
@@ -67,6 +68,19 @@
     "spell:15258",
     "spell:1277328",
     "item:250937"
+  ],
+  "stats": [
+    "Intellect",
+    "Spirit",
+    "Stamina",
+    "SpellPower",
+    "ShadowPower",
+    "SpellHit",
+    "SpellCrit",
+    "SpellHaste",
+    "MP5",
+    "Mana",
+    "Health"
   ],
   "review": {
     "dots": [

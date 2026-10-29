@@ -1,6 +1,6 @@
 import type { LiveCast, LiveStart, LiveStep } from './live';
 import type { Payload, WorkerRequest } from './protocol';
-import type { FightSpec, SimJob, SimProfile, SimSummary } from './types';
+import type { AplRotation, FightSpec, SimJob, SimProfile, SimSummary } from './types';
 import { buildLiveRequest } from './request';
 
 // The page's side of the engine: one worker, requests answered in order.
@@ -36,12 +36,24 @@ export const loadEngine = () => send<boolean>('load', {});
 
 export const runSim = (job: SimJob) => send<SimSummary>('sim', { job } satisfies Payload<'sim'>);
 
+/** The character's stats with gear, talents, buffs and consumables, in the order of the sim's Stat list. */
+export const computeStats = (profile: SimProfile) =>
+  send<number[]>('stats', { request: buildLiveRequest(profile, 1, { kind: 'time', seconds: 60 }) } satisfies Payload<'stats'>);
+
 export const live = {
-  start: (profile: SimProfile, targets: number, fight: FightSpec, countdown: number, seed = 0) =>
-    send<LiveStart>('liveStart', { request: buildLiveRequest(profile, targets, fight), seed, countdown } satisfies Payload<'liveStart'>),
-  advance: (to: number) => send<LiveStep>('liveAdvance', { to } satisfies Payload<'liveAdvance'>),
+  start: (profile: SimProfile, targets: number, fight: FightSpec, countdown: number, rotation?: AplRotation, seed = 0) =>
+    send<LiveStart>('liveStart', { request: buildLiveRequest(profile, targets, fight, rotation), seed, countdown } satisfies Payload<'liveStart'>),
+  advance: (to: number, target = 0) => send<LiveStep>('liveAdvance', { to, target } satisfies Payload<'liveAdvance'>),
   cast: (index: number, target: number) => send<LiveCast>('liveCast', { index, target } satisfies Payload<'liveCast'>),
 };
+
+/** A class's talent trees as the sim knows them (public/sim/talents/<class>.json), e.g. "priest". */
+export interface TalentTree { name: string; talents: Array<{ name: string; icon?: string; maxPoints: number; row: number; col: number }> }
+export async function loadTalentTrees(simClass: string): Promise<TalentTree[]> {
+  const res = await fetch(simFile(`talents/${simClass}.json`));
+  if (!res.ok) throw new Error(`No talents for ${simClass}`);
+  return res.json();
+}
 
 /** The sim's ranked profiles for a class, by race. */
 export async function loadProfiles(classKey: string): Promise<Record<string, SimProfile>> {

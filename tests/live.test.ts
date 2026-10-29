@@ -131,3 +131,25 @@ describe.skipIf(!simBuilt)('live fight before the pull', () => {
     expect(hits[0].t).toBeCloseTo(0, 5);
   });
 });
+
+describe.skipIf(!simBuilt)('hint', () => {
+  it('names the spell the rotation would cast next, even during the global cooldown', async () => {
+    await loadSim();
+    const api = liveApi(globalThis as unknown as LiveEngine);
+    const { shadowPriest } = await import('../src/classes/shadow-priest');
+    const profile = profiles('shadow-priest').undead;
+    const { spells, state } = api.start(buildLiveRequest(profile, 1, { kind: 'time', seconds: 60 }, shadowPriest.defaultRotation), 5, 3);
+    expect(state.hint).toBeUndefined(); // before the pull
+    const first = api.advance(0.01).state;
+    expect(first.hint).toBe(SHADOWFORM); // Tobias's rotation: Shadowform first if it is not up
+    const idx = (key: string) => spells.filter((s) => s.key === key).sort((a, b) => b.rank - a.rank)[0].index;
+    const r = api.cast(idx(SHADOWFORM), 0);
+    expect(r.ok).toBe(true);
+    expect(r.state.gcd).toBeGreaterThan(0);
+    expect(r.state.hint).toBeDefined();
+    expect(r.state.hint).not.toBe(SHADOWFORM);
+    // The rotation never acts by itself.
+    const later = api.advance(10);
+    expect(parseTimeline(later.logs, 'Shadow').filter((e) => e.type === 'cast')).toEqual([]);
+  });
+});

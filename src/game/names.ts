@@ -1,7 +1,7 @@
 import { simFile } from '../sim/client';
 
 // Names and icons of spells and items, from the sim's database (public/sim/names.json).
-let names: { spell: Record<string, [string, string]>; item: Record<string, [string, string]> } = { spell: {}, item: {} };
+let names: { spell: Record<string, [string, string]>; item: Record<string, [string, string]>; enchant?: Record<string, string> } = { spell: {}, item: {} };
 
 export async function loadNames(): Promise<void> {
   try {
@@ -28,4 +28,13 @@ export function iconUrl(key: string): string | null {
 
 export function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
+export function enchantName(id: number): string | null {
+  return names.enchant?.[id] ?? null;
+}
+
+/** An icon by its name in the sim's icon set (e.g. a talent's). */
+export function namedIconUrl(icon: string | undefined): string | null {
+  return icon ? simFile(`icons/${icon}.jpg`) : null;
 }

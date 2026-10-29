@@ -21,12 +21,39 @@ const db = JSON.parse(fs.readFileSync(path.join(src, 'assets/database/db.json'))
 const names = { spell: {}, item: {} };
 for (const s of db.spellIcons) names.spell[s.id] = [s.name, s.icon];
 for (const i of db.itemIcons) names.item[i.id] = [i.name, i.icon];
+names.enchant = {};
+for (const e of db.enchants) names.enchant[e.effectId] = e.name;
 fs.writeFileSync(path.join(out, '..', 'names.json'), JSON.stringify(names));
 
-// Icons of everything the class modules show (src/classes/*/class.json), from the sim's copy of Wowhead's icons.
+// Icons of everything the class modules show (src/classes/*/class.json), the talents and the gear of the profiles,
+// from the sim's copy of Wowhead's icons.
 const classesDir = new URL('../src/classes/', import.meta.url);
 const iconDir = path.join(out, '..', 'icons');
 fs.mkdirSync(iconDir, { recursive: true });
+const copyIcon = (icon) => {
+  const from = icon && path.join(src, 'assets/img/wowhead/icons/large', icon + '.jpg');
+  if (from && fs.existsSync(from)) fs.copyFileSync(from, path.join(iconDir, icon + '.jpg'));
+};
+
+// Talent trees of every class (names, places, ranks), for showing a profile's talents.
+const talentDir = path.join(out, '..', 'talents');
+fs.mkdirSync(talentDir, { recursive: true });
+const treesDir = path.join(src, 'ui/core/talents/trees');
+for (const file of fs.readdirSync(treesDir)) {
+  const trees = JSON.parse(fs.readFileSync(path.join(treesDir, file))).map((tree) => ({
+    name: tree.name,
+    talents: tree.talents.map((t) => {
+      copyIcon(t.icon);
+      return { name: t.name, icon: t.icon, maxPoints: t.maxPoints, row: t.location.rowIdx, col: t.location.colIdx };
+    }),
+  }));
+  fs.writeFileSync(path.join(talentDir, file), JSON.stringify(trees));
+}
+for (const file of fs.readdirSync(out)) {
+  for (const profile of Object.values(JSON.parse(fs.readFileSync(path.join(out, file))))) {
+    for (const item of profile.player.equipment?.items ?? []) copyIcon(names.item[item.id]?.[1]);
+  }
+}
 for (const dir of fs.readdirSync(classesDir)) {
   const file = new URL(`${dir}/class.json`, classesDir);
   if (!fs.existsSync(file)) continue;

@@ -27,6 +27,8 @@ export interface LiveState {
   channel?: { key: string; ends: number; ticks: number; tick: number };
   targets: Array<{ auras: LiveAura[] }>;
   damageTaken: number;
+  /** The spell the sim's rotation would cast next (when the fight was started with one). */
+  hint?: string;
   /** All bosses' health together in a health fight; 0 in a timed fight. */
   health: number;
 }
@@ -53,7 +55,7 @@ function call<T>(fn: (json: string) => string, arg: unknown): T {
 export function liveApi(engine: LiveEngine) {
   return {
     start: (request: Record<string, unknown>, seed = 0, countdown = 0) => call<LiveStart>(engine.playStart, { request, seed, countdown }),
-    advance: (to: number) => call<LiveStep>(engine.playAdvance, { to }),
+    advance: (to: number, target = 0) => call<LiveStep>(engine.playAdvance, { to, target }),
     cast: (index: number, target: number) => call<LiveCast>(engine.playCast, { index, target }),
   };
 }

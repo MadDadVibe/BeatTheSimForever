@@ -1,5 +1,5 @@
 import { normalizeApl } from './apl';
-import type { FightSpec, SimJob, SimProfile } from './types';
+import type { AplRotation, FightSpec, SimJob, SimProfile } from './types';
 
 const STAT_HEALTH = 34;
 // A live fight until the bosses are dead stops here at the latest.
@@ -44,15 +44,19 @@ export function buildRequest(job: SimJob, seconds: number): Record<string, unkno
   };
 }
 
-/** The request for a live fight the player drives: no rotation, and a health fight really ends when the bosses die. */
-export function buildLiveRequest(profile: SimProfile, targets: number, fight: FightSpec): Record<string, unknown> {
+/**
+ * The request for a live fight the player drives; a health fight really ends when the bosses die. The rotation, if
+ * given, never acts (the engine waits for the player); it only answers which spell it would cast next (the hint).
+ * Its pre-pull actions are left out, since those would run by themselves.
+ */
+export function buildLiveRequest(profile: SimProfile, targets: number, fight: FightSpec, rotation?: AplRotation): Record<string, unknown> {
   const seconds = fight.kind === 'time' ? fight.seconds : LIVE_HEALTH_LIMIT_SECONDS;
   const req = buildRequest({ profile, targets, fight, iterations: 1, seed: 1 }, seconds) as {
     raid: { parties: Array<{ players: Array<Record<string, unknown>> }> };
     encounter: { useHealth?: boolean; targets: Array<{ stats: number[] }> };
   };
-  // The player presses the buttons; no rotation may act for them.
-  req.raid.parties[0].players[0].rotation = { type: 'TypeAPL', priorityList: [] };
+  const { prepullActions: _pre, ...hintOnly } = rotation ? normalizeApl(rotation) : { type: 'TypeAPL', priorityList: [] };
+  req.raid.parties[0].players[0].rotation = hintOnly;
   if (fight.kind === 'health') {
     req.encounter.useHealth = true;
     for (const t of req.encounter.targets) {

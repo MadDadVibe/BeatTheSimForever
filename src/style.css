@@ -148,3 +148,48 @@ body:has(.in-fight) { overscroll-behavior: none; }
   .auras.big .aura { width: 48px; height: 48px; }
   .focus { min-height: 0; }
 }
+
+/* Preparing for the fight */
+label.check { flex-direction: row; align-items: center; gap: 10px; color: var(--text); font-size: 0.9rem; }
+label.check input { min-height: 0; width: 20px; height: 20px; }
+.toggle { background: none; color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+.toggle[aria-pressed='true'] { color: var(--bg); background: var(--warn); border-color: var(--warn); font-weight: 700; }
+.prep { display: none; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
+.prepping .prep { display: flex; }
+.prepping .focus, .prepping .me, .prepping .meter { display: none; }
+.fight.prepping { height: calc(100dvh - 16px); min-height: 0; }
+.sheet { flex: 1; min-height: 0; overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 4px 12px 12px; }
+.sheet-title { font-size: 1rem; margin: 10px 0 6px; }
+.sheet-part { border-top: 1px solid var(--line); padding: 8px 0; }
+.sheet-part summary { cursor: pointer; font-weight: 600; }
+.sheet-part summary span, .sheet-part summary small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+.tree h3 { font-size: 0.9rem; margin: 10px 0 6px; color: var(--muted); }
+.tree.main h3 { color: var(--accent); }
+.talent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.talent { display: grid; grid-template-columns: 32px 1fr; grid-template-rows: auto auto; column-gap: 8px; align-items: center; font-size: 0.8rem; }
+.talent img { grid-row: 1 / 3; width: 32px; height: 32px; border-radius: 6px; }
+.talent b { font-size: 0.75rem; color: var(--good); }
+.talent em { font-style: normal; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+table.stats { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+table.stats td { padding: 4px 0; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+table.stats td:last-child { text-align: right; }
+ul.gear, ul.consumes { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 6px; font-size: 0.85rem; }
+ul.gear li { display: flex; gap: 8px; align-items: center; }
+ul.gear img, ul.gear .ph { width: 32px; height: 32px; border-radius: 6px; flex: none; background: var(--panel-2); }
+ul.gear div { display: flex; flex-direction: column; min-width: 0; }
+ul.gear small { color: var(--muted); font-size: 0.72rem; }
+ul.gear .enchant { color: var(--good); }
+ul.consumes li::before { content: '• '; color: var(--muted); }
+.prep-help { margin: 0; }
+.ready { background: var(--accent-strong); color: #fff; border: 0; border-radius: 10px; min-height: 52px; font-weight: 700; font-size: 1.05rem; }
+.ready small { font-weight: 400; opacity: 0.8; }
+.prepping .action { touch-action: none; cursor: grab; }
+.action.pointed { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.action.drop { border-color: var(--good); box-shadow: 0 0 0 2px var(--good); }
+.action.dragging { opacity: 0.35; }
+.action.ghost { position: fixed; z-index: 10; transform: translate(-50%, -50%) scale(1.08); pointer-events: none; aspect-ratio: 1; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
+
+/* The hint: the spell the sim would cast next */
+.action.hint { border-color: var(--warn); box-shadow: 0 0 0 2px var(--warn), 0 0 14px var(--warn); animation: hint 1s ease-in-out infinite alternate; }
+@keyframes hint { from { box-shadow: 0 0 0 2px var(--warn), 0 0 4px var(--warn); } to { box-shadow: 0 0 0 2px var(--warn), 0 0 16px var(--warn); } }
+@media (prefers-reduced-motion: reduce) { .action.hint { animation: none; } }
