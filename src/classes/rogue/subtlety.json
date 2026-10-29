@@ -1,0 +1,128 @@
+{
+  "key": "subtlety-rogue",
+  "name": "Subtlety",
+  "tree": "Subtlety",
+  "defaultRace": "undead",
+  "resources": [
+    "energy",
+    "combo"
+  ],
+  "bar": [
+    {
+      "key": "spell:6774",
+      "short": "SnD"
+    },
+    {
+      "key": "spell:1856",
+      "short": "Van"
+    },
+    {
+      "key": "spell:11290",
+      "short": "Garr"
+    },
+    {
+      "key": "spell:11269",
+      "short": "Amb"
+    },
+    {
+      "key": "spell:16511",
+      "short": "Hemo"
+    },
+    {
+      "key": "spell:11275",
+      "short": "Rupt"
+    },
+    {
+      "key": "spell:11300",
+      "short": "Evis"
+    },
+    {
+      "key": "spell:14278",
+      "short": "Ghost"
+    },
+    {
+      "key": "spell:1784",
+      "short": "Stealth"
+    },
+    {
+      "key": "spell:14183",
+      "short": "Premed"
+    },
+    {
+      "key": "spell:14185",
+      "short": "Prepa."
+    },
+    {
+      "key": "spell:1259812",
+      "short": "Eureka"
+    },
+    {
+      "key": "spell:1259799",
+      "short": "EL"
+    },
+    {
+      "key": "spell:20572",
+      "short": "BFury"
+    },
+    {
+      "key": "spell:20554",
+      "short": "Zerk"
+    },
+    {
+      "key": "item:7676",
+      "short": "Tea"
+    },
+    {
+      "key": "item:250943",
+      "short": "Pot"
+    },
+    {
+      "key": "item:10646",
+      "short": "Sapper"
+    }
+  ],
+  "targetAuras": [
+    "spell:11290",
+    "spell:11275",
+    "spell:16511"
+  ],
+  "playerAuras": [
+    "spell:6774",
+    "spell:1787",
+    "spell:1856",
+    "spell:11269",
+    "spell:11300",
+    "spell:14278",
+    "spell:1784",
+    "spell:14183",
+    "spell:14185",
+    "spell:1259812",
+    "spell:1259799",
+    "spell:20572",
+    "spell:20554",
+    "item:7676",
+    "item:250943",
+    "item:10646"
+  ],
+  "stats": [
+    "Strength",
+    "Agility",
+    "Stamina",
+    "AttackPower",
+    "MeleeHit",
+    "MeleeCrit",
+    "MeleeHaste",
+    "Expertise",
+    "ArmorPenetration",
+    "Health"
+  ],
+  "review": {
+    "dots": [
+      "spell:11290",
+      "spell:11275"
+    ],
+    "keepOnCooldown": [
+      "spell:14278"
+    ]
+  }
+}

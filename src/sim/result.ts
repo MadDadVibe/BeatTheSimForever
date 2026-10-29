@@ -46,17 +46,17 @@ export function parseTimeline(logs: string, playerName: string): TimelineEvent[]
           castTime: Number(x[3]) / (x[4] === 'ms' ? 1000 : 1),
           effective: Number(x[5]) / (x[6] === 'ms' ? 1000 : 1),
         });
-      } else if ((x = body.match(/^\[Target \d+\] (\{[^}]*\}) (tick )?(Hit|Crit)\w* for ([\d.]+) damage/))) {
+      } else if ((x = body.match(/^\[Target \d+\] (\{[^}]*\}) (tick )?([A-Z][a-z]+)\w* for ([\d.]+) damage/))) {
         const amount = Number(x[4]);
-        if (amount > 0) events.push({ t, type: 'damage', key: logKey(x[1]), target: targetIndex(body) ?? 0, amount, crit: x[3] === 'Crit', tick: !!x[2] });
+        if (amount > 0) events.push({ t, type: 'damage', key: logKey(x[1]), target: targetIndex(body) ?? 0, amount, crit: x[3].startsWith('Crit'), tick: !!x[2] });
       } else if ((x = body.match(/^(?:Spent|Gained) [\d.]+ mana from .* --> ([\d.]+)\)/))) {
         events.push({ t, type: 'mana', mana: Number(x[1]) });
       }
     } else if (rest.startsWith(myPet)) {
       const body = rest.slice(rest.indexOf(']') + 1).trim();
-      const x = body.match(/^\[Target \d+\] (\{[^}]*\}) (tick )?(Hit|Crit)\w* for ([\d.]+) damage/);
+      const x = body.match(/^\[Target \d+\] (\{[^}]*\}) (tick )?([A-Z][a-z]+)\w* for ([\d.]+) damage/);
       const amount = x ? Number(x[4]) : 0;
-      if (x && amount > 0) events.push({ t, type: 'damage', key: PET_PREFIX + logKey(x[1]), target: targetIndex(body) ?? 0, amount, crit: x[3] === 'Crit', tick: !!x[2] });
+      if (x && amount > 0) events.push({ t, type: 'damage', key: PET_PREFIX + logKey(x[1]), target: targetIndex(body) ?? 0, amount, crit: x[3].startsWith('Crit'), tick: !!x[2] });
     } else if ((x2 = rest.match(/^\[Target \d+\] Aura (gained|faded|refreshed):/))) {
       const type = x2[1] === 'gained' ? 'auraOn' : x2[1] === 'faded' ? 'auraOff' : 'auraRefresh';
       events.push({ t, type, key: logKey(rest), target: targetIndex(rest) });

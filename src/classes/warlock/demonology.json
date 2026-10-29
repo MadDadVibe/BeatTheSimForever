@@ -1,0 +1,128 @@
+{
+  "key": "demonology-warlock",
+  "name": "Demonic Pact",
+  "tree": "Demonology",
+  "defaultRace": "undead",
+  "resources": [
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "spell:11689",
+      "short": "Tap"
+    },
+    {
+      "key": "spell:1311680",
+      "short": "CoE"
+    },
+    {
+      "key": "spell:603",
+      "short": "CoD"
+    },
+    {
+      "key": "spell:11672",
+      "short": "Corr"
+    },
+    {
+      "key": "spell:17923",
+      "short": "SP"
+    },
+    {
+      "key": "spell:11661",
+      "short": "SB9"
+    },
+    {
+      "key": "spell:11713",
+      "short": "CoA"
+    },
+    {
+      "key": "spell:11668",
+      "short": "Immo"
+    },
+    {
+      "key": "spell:695",
+      "short": "SB2"
+    },
+    {
+      "key": "spell:688",
+      "short": "Imp"
+    },
+    {
+      "key": "spell:18788",
+      "short": "Sac"
+    },
+    {
+      "key": "spell:712",
+      "short": "Succ"
+    },
+    {
+      "key": "spell:19028",
+      "short": "Link"
+    },
+    {
+      "key": "spell:1259821",
+      "short": "Eureka"
+    },
+    {
+      "key": "spell:20572",
+      "short": "BFury"
+    },
+    {
+      "key": "spell:20554",
+      "short": "Zerk"
+    },
+    {
+      "key": "item:12662",
+      "short": "Rune"
+    },
+    {
+      "key": "item:13444",
+      "short": "Pot"
+    }
+  ],
+  "targetAuras": [
+    "spell:603",
+    "spell:11672",
+    "spell:11713",
+    "spell:11668",
+    "spell:1311680",
+    "spell:1293696"
+  ],
+  "playerAuras": [
+    "spell:11689",
+    "spell:17923",
+    "spell:11661",
+    "spell:695",
+    "spell:688",
+    "spell:18788",
+    "spell:712",
+    "spell:19028",
+    "spell:1259821",
+    "spell:20572",
+    "spell:20554",
+    "item:12662",
+    "item:13444"
+  ],
+  "stats": [
+    "Intellect",
+    "Spirit",
+    "Stamina",
+    "SpellPower",
+    "ShadowPower",
+    "SpellHit",
+    "SpellCrit",
+    "SpellHaste",
+    "MP5",
+    "Mana",
+    "Health"
+  ],
+  "review": {
+    "dots": [
+      "spell:603",
+      "spell:11672",
+      "spell:11713",
+      "spell:11668"
+    ],
+    "keepOnCooldown": []
+  }
+}

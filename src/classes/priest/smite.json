@@ -1,0 +1,97 @@
+{
+  "key": "smite-priest",
+  "name": "Smite",
+  "tree": "Discipline",
+  "defaultRace": "undead",
+  "resources": [
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "spell:15261",
+      "short": "HF"
+    },
+    {
+      "key": "spell:10894",
+      "short": "SW:P"
+    },
+    {
+      "key": "spell:10934",
+      "short": "Smite"
+    },
+    {
+      "key": "spell:1316995",
+      "short": "Pen"
+    },
+    {
+      "key": "spell:14751",
+      "short": "IF"
+    },
+    {
+      "key": "spell:10060",
+      "short": "PI"
+    },
+    {
+      "key": "spell:1259823",
+      "short": "Eureka"
+    },
+    {
+      "key": "spell:1259799",
+      "short": "EL"
+    },
+    {
+      "key": "spell:20554",
+      "short": "Zerk"
+    },
+    {
+      "key": "spell:1277328",
+      "short": "DS"
+    },
+    {
+      "key": "item:13444",
+      "short": "Pot"
+    },
+    {
+      "key": "item:12662",
+      "short": "Rune"
+    }
+  ],
+  "targetAuras": [
+    "spell:15261",
+    "spell:10894"
+  ],
+  "playerAuras": [
+    "spell:10934",
+    "spell:1316995",
+    "spell:14751",
+    "spell:10060",
+    "spell:1259823",
+    "spell:1259799",
+    "spell:20554",
+    "spell:1277328",
+    "item:13444",
+    "item:12662"
+  ],
+  "stats": [
+    "Intellect",
+    "Spirit",
+    "Stamina",
+    "SpellPower",
+    "FirePower",
+    "HolyPower",
+    "ShadowPower",
+    "SpellHit",
+    "SpellCrit",
+    "SpellHaste",
+    "MP5",
+    "Mana",
+    "Health"
+  ],
+  "review": {
+    "dots": [
+      "spell:15261",
+      "spell:10894"
+    ],
+    "keepOnCooldown": []
+  }
+}

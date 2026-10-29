@@ -136,7 +136,8 @@ describe.skipIf(!simBuilt)('hint', () => {
   it('names the spell the rotation would cast next, even during the global cooldown', async () => {
     await loadSim();
     const api = liveApi(globalThis as unknown as LiveEngine);
-    const { shadowPriest } = await import('../src/classes/shadow-priest');
+    const { SPECS } = await import('../src/classes');
+    const shadowPriest = SPECS.find((s) => s.key === 'shadow-priest')!;
     const profile = profiles('shadow-priest').undead;
     const { spells, state } = api.start(buildLiveRequest(profile, 1, { kind: 'time', seconds: 60 }, shadowPriest.defaultRotation), 5, 3);
     expect(state.hint).toBeUndefined(); // before the pull
@@ -159,7 +160,8 @@ describe.skipIf(!simBuilt)('start buffs and set bonuses', () => {
   it('has Shadowform up from the start, and the full GCD free', async () => {
     await loadSim();
     const api = liveApi(globalThis as unknown as LiveEngine);
-    const { shadowPriest } = await import('../src/classes/shadow-priest');
+    const { SPECS } = await import('../src/classes');
+    const shadowPriest = SPECS.find((s) => s.key === 'shadow-priest')!;
     const profile = profiles('shadow-priest').undead;
     const { state } = api.start(buildLiveRequest(profile, 1, { kind: 'time', seconds: 30 }, shadowPriest.defaultRotation, shadowPriest.startBuffs), 1, 5);
     expect(state.time).toBe(-5);

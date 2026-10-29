@@ -1,0 +1,106 @@
+{
+  "key": "enhancement-shaman",
+  "name": "Enhancement",
+  "tree": "Enhancement",
+  "defaultRace": "windshaper",
+  "resources": [
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "spell:10438",
+      "short": "Sear"
+    },
+    {
+      "key": "spell:29228",
+      "short": "FS"
+    },
+    {
+      "key": "spell:17364",
+      "short": "SS"
+    },
+    {
+      "key": "spell:10414",
+      "short": "ES"
+    },
+    {
+      "key": "spell:408345",
+      "short": "Nova"
+    },
+    {
+      "key": "spell:15208",
+      "short": "LB"
+    },
+    {
+      "key": "spell:425336",
+      "short": "SR"
+    },
+    {
+      "key": "spell:20572",
+      "short": "BFury"
+    },
+    {
+      "key": "spell:20554",
+      "short": "Zerk"
+    },
+    {
+      "key": "item:13444",
+      "short": "Pot"
+    },
+    {
+      "key": "item:12662",
+      "short": "Rune"
+    },
+    {
+      "key": "item:10646",
+      "short": "Sapper"
+    },
+    {
+      "key": "item:15993",
+      "short": "Nade"
+    }
+  ],
+  "targetAuras": [
+    "spell:29228"
+  ],
+  "playerAuras": [
+    "spell:16246",
+    "spell:408505",
+    "spell:10438",
+    "spell:17364",
+    "spell:10414",
+    "spell:408345",
+    "spell:15208",
+    "spell:425336",
+    "spell:20572",
+    "spell:20554",
+    "item:13444",
+    "item:12662",
+    "item:10646",
+    "item:15993"
+  ],
+  "stats": [
+    "Strength",
+    "Agility",
+    "Stamina",
+    "AttackPower",
+    "MeleeHit",
+    "MeleeCrit",
+    "MeleeHaste",
+    "Expertise",
+    "ArmorPenetration",
+    "Health",
+    "SpellPower",
+    "Mana"
+  ],
+  "review": {
+    "dots": [
+      "spell:29228"
+    ],
+    "keepOnCooldown": [
+      "spell:17364",
+      "spell:10414",
+      "spell:408345"
+    ]
+  }
+}

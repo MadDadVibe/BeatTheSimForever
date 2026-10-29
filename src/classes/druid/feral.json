@@ -1,0 +1,91 @@
+{
+  "key": "feral-druid",
+  "name": "Feral",
+  "tree": "Feral Combat",
+  "defaultRace": "windshaper",
+  "resources": [
+    "energy",
+    "combo",
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "spell:22829",
+      "short": "Bite"
+    },
+    {
+      "key": "spell:9904",
+      "short": "Rake"
+    },
+    {
+      "key": "spell:9896",
+      "short": "Rip"
+    },
+    {
+      "key": "spell:1322605",
+      "short": "Shift"
+    },
+    {
+      "key": "spell:9830",
+      "short": "Shred"
+    },
+    {
+      "key": "spell:29166",
+      "short": "Inn"
+    },
+    {
+      "key": "spell:50334",
+      "short": "Bers."
+    },
+    {
+      "key": "spell:5229",
+      "short": "Enrage"
+    },
+    {
+      "key": "spell:1259799",
+      "short": "EL"
+    },
+    {
+      "key": "item:7676",
+      "short": "Tea"
+    },
+    {
+      "key": "item:13444",
+      "short": "Pot"
+    }
+  ],
+  "targetAuras": [
+    "spell:9896",
+    "spell:9904"
+  ],
+  "playerAuras": [
+    "spell:22829",
+    "spell:1322605",
+    "spell:9830",
+    "spell:29166",
+    "spell:50334",
+    "spell:5229",
+    "spell:1259799",
+    "item:7676",
+    "item:13444"
+  ],
+  "stats": [
+    "Strength",
+    "Agility",
+    "Stamina",
+    "AttackPower",
+    "MeleeHit",
+    "MeleeCrit",
+    "MeleeHaste",
+    "Expertise",
+    "ArmorPenetration",
+    "Health"
+  ],
+  "review": {
+    "dots": [
+      "spell:9896",
+      "spell:9904"
+    ],
+    "keepOnCooldown": []
+  }
+}

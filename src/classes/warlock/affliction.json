@@ -1,0 +1,108 @@
+{
+  "key": "affliction-warlock",
+  "name": "Affliction",
+  "tree": "Affliction",
+  "defaultRace": "undead",
+  "resources": [
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "spell:17923",
+      "short": "SP"
+    },
+    {
+      "key": "spell:11689",
+      "short": "Tap"
+    },
+    {
+      "key": "spell:1311680",
+      "short": "CoE"
+    },
+    {
+      "key": "spell:11672",
+      "short": "Corr"
+    },
+    {
+      "key": "spell:603",
+      "short": "CoD"
+    },
+    {
+      "key": "spell:11713",
+      "short": "CoA"
+    },
+    {
+      "key": "spell:11668",
+      "short": "Immo"
+    },
+    {
+      "key": "spell:11661",
+      "short": "SB"
+    },
+    {
+      "key": "spell:17924",
+      "short": "SF"
+    },
+    {
+      "key": "spell:1259821",
+      "short": "Eureka"
+    },
+    {
+      "key": "spell:20572",
+      "short": "BFury"
+    },
+    {
+      "key": "spell:20554",
+      "short": "Zerk"
+    },
+    {
+      "key": "item:12662",
+      "short": "Rune"
+    },
+    {
+      "key": "item:13444",
+      "short": "Pot"
+    }
+  ],
+  "targetAuras": [
+    "spell:11672",
+    "spell:603",
+    "spell:11713",
+    "spell:11668",
+    "spell:1311680"
+  ],
+  "playerAuras": [
+    "spell:17923",
+    "spell:11689",
+    "spell:11661",
+    "spell:17924",
+    "spell:1259821",
+    "spell:20572",
+    "spell:20554",
+    "item:12662",
+    "item:13444"
+  ],
+  "stats": [
+    "Intellect",
+    "Spirit",
+    "Stamina",
+    "SpellPower",
+    "ShadowPower",
+    "FirePower",
+    "SpellHit",
+    "SpellCrit",
+    "SpellHaste",
+    "MP5",
+    "Mana",
+    "Health"
+  ],
+  "review": {
+    "dots": [
+      "spell:11672",
+      "spell:603",
+      "spell:11713",
+      "spell:11668"
+    ],
+    "keepOnCooldown": []
+  }
+}

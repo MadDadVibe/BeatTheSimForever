@@ -1,8 +1,11 @@
 {
   "key": "shadow-priest",
-  "name": "Shadow Priest",
-  "spec": "Shadow",
+  "name": "Shadow",
+  "tree": "Shadow",
   "defaultRace": "undead",
+  "resources": [
+    "mana"
+  ],
   "startBuffs": [
     "spell:15473"
   ],

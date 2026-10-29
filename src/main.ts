@@ -1,6 +1,6 @@
 import './style.css';
-import { CLASSES } from './classes';
-import type { ClassModule } from './classes/types';
+import { CLASSES, SPECS } from './classes';
+import type { SpecModule } from './classes/types';
 import { runFight, type FightSetup } from './game/fight';
 import { iconUrl, loadNames } from './game/names';
 import { showResults } from './game/results';
@@ -20,15 +20,36 @@ let profiles: Record<string, SimProfile> = {};
 let customRotation: AplRotation | null = null;
 let engineReady = false;
 
-const currentClass = (): ClassModule => CLASSES.find((c) => c.key === field<HTMLSelectElement>('class').value)!;
+const currentClass = () => CLASSES.find((c) => c.key === field<HTMLSelectElement>('class').value)!;
+const currentSpec = (): SpecModule => SPECS.find((s) => s.key === field<HTMLSelectElement>('spec').value)!;
 const raceName = (key: string) => key.split('_').map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
 
-async function loadClass() {
-  const cls = currentClass();
-  profiles = await loadProfiles(cls.key);
+/** The spec picked last time, remembered in this browser. */
+function remember(key: string, value?: string): string | null {
+  try {
+    if (value !== undefined) localStorage.setItem(key, value);
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function fillSpecs(pick?: string) {
+  const specs = currentClass().specs;
+  const select = field<HTMLSelectElement>('spec');
+  select.innerHTML = specs.map((s) => `<option value="${s.key}">${s.name}</option>`).join('');
+  select.value = specs.some((s) => s.key === pick) ? pick! : specs[0].key;
+}
+
+async function loadSpec() {
+  const spec = currentSpec();
+  remember('spec', spec.key);
   const race = field<HTMLSelectElement>('race');
+  const before = race.value;
+  profiles = await loadProfiles(spec.key);
+  if (currentSpec() !== spec) return; // another spec was picked meanwhile
   race.innerHTML = Object.keys(profiles).map((r) => `<option value="${r}">${raceName(r)}</option>`).join('');
-  race.value = cls.defaultRace in profiles ? cls.defaultRace : Object.keys(profiles)[0];
+  race.value = before in profiles ? before : spec.defaultRace in profiles ? spec.defaultRace : Object.keys(profiles)[0];
 }
 
 function syncFightFields() {
@@ -44,12 +65,12 @@ function readSetup(): FightSetup {
   const base = profiles[field<HTMLSelectElement>('race').value];
   const profile = { ...base, player: { ...base.player, foreverTier1Bonuses: field<HTMLInputElement>('tier1').checked } };
   return {
-    cls: currentClass(),
+    spec: currentSpec(),
     profile,
     targets: Number(field<HTMLSelectElement>('targets').value),
     fight,
     countdown: 5,
-    rotation: customRotation ?? currentClass().defaultRotation,
+    rotation: customRotation ?? currentSpec().defaultRotation ?? profile.player.rotation!,
     hints: field<HTMLInputElement>('hints').checked,
   };
 }
@@ -113,14 +134,25 @@ field<HTMLInputElement>('hints').addEventListener('change', () => {
   try { localStorage.setItem('hints', field<HTMLInputElement>('hints').checked ? '1' : '0'); } catch { /* not remembered */ }
 });
 
+const lastSpec = SPECS.find((s) => s.key === remember('spec')) ?? SPECS.find((s) => s.key === 'shadow-priest')!;
 field<HTMLSelectElement>('class').innerHTML = CLASSES.map((c) => `<option value="${c.key}">${c.name}</option>`).join('');
+field<HTMLSelectElement>('class').value = CLASSES.find((c) => c.specs.includes(lastSpec))!.key;
+fillSpecs(lastSpec.key);
 field<HTMLSelectElement>('fight').addEventListener('change', syncFightFields);
-field<HTMLSelectElement>('class').addEventListener('change', () => void loadClass());
+// A rotation loaded for one spec means nothing for another.
+function dropCustomRotation() {
+  if (!customRotation) return;
+  customRotation = null;
+  field<HTMLInputElement>('rotation').value = '';
+  status.textContent = '';
+}
+field<HTMLSelectElement>('class').addEventListener('change', () => { fillSpecs(); dropCustomRotation(); void loadSpec(); });
+field<HTMLSelectElement>('spec').addEventListener('change', () => { dropCustomRotation(); void loadSpec(); });
 
 const start = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
 start.disabled = true;
 start.textContent = 'Lade die Engine …';
-Promise.all([loadClass(), loadNames(), loadEngine()])
+Promise.all([loadSpec(), loadNames(), loadEngine()])
   .then(() => {
     engineReady = true;
     start.disabled = false;
@@ -134,8 +166,8 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
   // On the first visit the page loaded before the offline cache existed: hand it what the game needs.
   navigator.serviceWorker.ready.then((reg) => {
     const loaded = performance.getEntriesByType('resource').map((e) => e.name);
-    const engine = ['lib.wasm', 'wasm_exec.js', 'names.json', ...CLASSES.map((c) => `presets/${c.key}.json`)].map(simFile);
-    const icons = CLASSES.flatMap((c) => [...c.bar.map((b) => b.key), ...c.targetAuras, ...c.playerAuras]).map(iconUrl).filter((u): u is string => !!u);
+    const engine = ['lib.wasm', 'wasm_exec.js', 'names.json', ...SPECS.map((s) => `presets/${s.key}.json`)].map(simFile);
+    const icons = [...new Set(SPECS.flatMap((s) => [...s.bar.map((b) => b.key), ...s.targetAuras, ...s.playerAuras]))].map(iconUrl).filter((u): u is string => !!u);
     reg.active?.postMessage({ cache: [location.href.split('#')[0], ...loaded, ...engine, ...icons] });
   });
 }

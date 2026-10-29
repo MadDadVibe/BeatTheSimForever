@@ -1,0 +1,98 @@
+{
+  "key": "feral-tank-druid",
+  "name": "Bear",
+  "tree": "Feral Combat",
+  "defaultRace": "windshaper",
+  "resources": [
+    "rage",
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "spell:9898",
+      "short": "Roar"
+    },
+    {
+      "key": "spell:9907",
+      "short": "FF"
+    },
+    {
+      "key": "spell:1238073",
+      "short": "PBite"
+    },
+    {
+      "key": "spell:9908",
+      "short": "Swipe"
+    },
+    {
+      "key": "spell:414644",
+      "short": "Lac"
+    },
+    {
+      "key": "spell:9881",
+      "short": "Maul"
+    },
+    {
+      "key": "spell:22842",
+      "short": "FR"
+    },
+    {
+      "key": "spell:22812",
+      "short": "Bark"
+    },
+    {
+      "key": "spell:50334",
+      "short": "Bers."
+    },
+    {
+      "key": "spell:5229",
+      "short": "Enrage"
+    },
+    {
+      "key": "spell:1259799",
+      "short": "EL"
+    }
+  ],
+  "targetAuras": [
+    "spell:414647",
+    "spell:9898",
+    "spell:9907"
+  ],
+  "playerAuras": [
+    "spell:1238073",
+    "spell:9908",
+    "spell:414644",
+    "spell:9881",
+    "spell:22842",
+    "spell:22812",
+    "spell:50334",
+    "spell:5229",
+    "spell:1259799"
+  ],
+  "stats": [
+    "Strength",
+    "Agility",
+    "AttackPower",
+    "MeleeHit",
+    "MeleeCrit",
+    "MeleeHaste",
+    "Expertise",
+    "ArmorPenetration",
+    "Stamina",
+    "Health",
+    "Armor",
+    "Defense",
+    "Dodge",
+    "Parry",
+    "Block",
+    "BlockValue",
+    "SpellPower",
+    "Mana"
+  ],
+  "review": {
+    "dots": [],
+    "keepOnCooldown": [
+      "spell:1238073"
+    ]
+  }
+}

@@ -24,6 +24,7 @@ const PET = 'pet:';
 
 export function label(key: string): string {
   if (key.startsWith(PET)) return `Pet: ${label(key.slice(PET.length))}`;
+  if (key.startsWith('move:')) return `Laufen auf ${key.slice(5)} Meter`;
   const [kind, id] = key.split(':');
   if (kind === 'spell') return names.spell[id]?.[0] ?? `Spell ${id}`;
   if (kind === 'item') return names.item[id]?.[0] ?? `Item ${id}`;
