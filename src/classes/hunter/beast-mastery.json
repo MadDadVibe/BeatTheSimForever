@@ -6,6 +6,9 @@
   "resources": [
     "mana"
   ],
+  "startBuffs": [
+    "spell:14322"
+  ],
   "bar": [
     {
       "key": "move:5",

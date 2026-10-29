@@ -64,3 +64,16 @@ describe.skipIf(!simBuilt)('every spec in the live fight', () => {
     expect(share).toBeLessThan(1.25);
   });
 });
+
+describe.skipIf(!simBuilt)('start buffs', () => {
+  it.each(SPECS.filter((s) => s.startBuffs?.length).map((s) => [s.key, s] as const))('%s has its lasting buffs up at the start', async (_key, spec) => {
+    await loadSim();
+    const api = liveApi(globalThis as unknown as LiveEngine);
+    const profile = profiles(spec.key)[spec.defaultRace];
+    const { state } = api.start(buildLiveRequest(profile, 1, { kind: 'time', seconds: 30 }, spec.defaultRotation ?? profile.player.rotation, spec.startBuffs), 1, 5);
+    const up = new Set([...state.auras, ...state.targets[0].auras].map((a) => a.key));
+    const lasting = spec.startBuffs!.filter((k) => !/^spell:(688|712|18788)$/.test(k)); // summons and the sacrifice leave other effects
+    for (const k of lasting) expect(up.has(k), k).toBe(true);
+    expect(state.mana).toBeGreaterThan(0.9 * state.maxMana);
+  });
+});

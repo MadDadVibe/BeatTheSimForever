@@ -27,6 +27,8 @@ Object.assign(names.item, {
   8007: ['Mana Citrine', 'inv_misc_gem_opal_01'], 8008: ['Mana Ruby', 'inv_misc_gem_ruby_01'],
 });
 names.spell[1784] ??= ['Stealth', 'ability_stealth'];
+// Forever's Rage of the Farseer talent reuses the id of Shamanistic Rage, which the database still names.
+if (names.spell[425336]) names.spell[425336][0] = 'Rage of the Farseer';
 names.enchant = {};
 for (const e of db.enchants) names.enchant[e.effectId] = e.name;
 fs.writeFileSync(path.join(out, '..', 'names.json'), JSON.stringify(names));

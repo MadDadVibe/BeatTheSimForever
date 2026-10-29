@@ -5,11 +5,16 @@ const STAT_HEALTH = 34;
 // A live fight until the bosses are dead stops here at the latest.
 const LIVE_HEALTH_LIMIT_SECONDS = 1200;
 
-/** When lasting buffs are cast: long before the pull (and before any countdown), so they are simply up. */
-const START_BUFF_AT = '-20s';
+/**
+ * When lasting buffs are cast: long before the pull (and before any countdown), so they are simply up. The last one
+ * goes at -20 s, each one before it a further START_BUFF_GAP earlier, enough for a 10-second summon and its global
+ * cooldown (a warlock's pet, then sacrificed, then the next pet).
+ */
+const START_BUFF_LAST = -20;
+const START_BUFF_GAP = 11;
 
 /**
- * The rotation with the start buffs cast at START_BUFF_AT, before anything else. A pre-pull cast of the same spell is
+ * The rotation with the start buffs cast in their order before anything else. A pre-pull cast of the same spell is
  * dropped (it would only cast it again).
  */
 export function withStartBuffs(rotation: AplRotation, buffs: string[] = []): AplRotation {
@@ -17,7 +22,8 @@ export function withStartBuffs(rotation: AplRotation, buffs: string[] = []): Apl
   if (!ids.length) return rotation;
   type Pre = { action?: { castSpell?: { spellId?: { spellId?: number } } } };
   const others = ((rotation.prepullActions as Pre[] | undefined) ?? []).filter((p) => !ids.includes(p.action?.castSpell?.spellId?.spellId ?? -1));
-  const buffActions = ids.map((spellId) => ({ action: { castSpell: { spellId: { spellId } } }, doAtValue: { const: { val: START_BUFF_AT } } }));
+  const at = (i: number) => `${START_BUFF_LAST - START_BUFF_GAP * (ids.length - 1 - i)}s`;
+  const buffActions = ids.map((spellId, i) => ({ action: { castSpell: { spellId: { spellId } } }, doAtValue: { const: { val: at(i) } } }));
   return { ...rotation, prepullActions: [...buffActions, ...others] };
 }
 
