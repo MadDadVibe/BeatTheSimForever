@@ -2,42 +2,44 @@
 <html lang="de">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark light" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#121017" />
     <title>Beat the Sim: Forever</title>
   </head>
   <body>
     <main id="app">
-      <h1>Beat the Sim: Forever</h1>
-      <p class="lead">Vorschau der Sim-Brücke: Der WoW-Forever-Sim läuft hier im Browser. Das Spiel selbst kommt im nächsten Schritt.</p>
+      <section id="setup-view">
+        <h1>Beat the Sim: Forever</h1>
+        <p class="lead">Spiel deine Rota gegen bis zu drei Bosse und vergleich dich danach mit dem WoW-Forever-Sim.</p>
 
-      <form id="setup">
-        <label>Klasse <select name="class"></select></label>
-        <label>Rasse <select name="race"></select></label>
-        <label>Bosse
-          <select name="targets"><option>1</option><option>2</option><option>3</option></select>
-        </label>
-        <label>Fight
-          <select name="fight">
-            <option value="time">Zeit</option>
-            <option value="health">Bis die Bosse tot sind</option>
-          </select>
-        </label>
-        <label data-for="time">Sekunden <input name="seconds" type="number" min="10" max="900" value="180" /></label>
-        <label data-for="health" hidden>Leben pro Boss <input name="health" type="number" min="10000" step="10000" value="150000" /></label>
-        <label>Iterationen <input name="iterations" type="number" min="1" max="5000" value="500" /></label>
-        <label class="wide">Eigene Rota (APL-JSON, optional) <input name="rotation" type="file" accept=".json,application/json" /></label>
-        <button type="submit">Sim starten</button>
-      </form>
-
-      <p id="status" role="status"></p>
-      <section id="result" hidden>
-        <div class="dps"><span id="dps"></span><small id="dps-detail"></small></div>
-        <h2>Spells pro Fight</h2>
-        <table id="spells"><thead><tr><th>Spell</th><th>Casts</th><th>Schaden</th><th>Anteil</th></tr></thead><tbody></tbody></table>
-        <h2>Erster Fight, die ersten 40 Casts</h2>
-        <ol id="timeline"></ol>
+        <form id="setup">
+          <label>Klasse <select name="class"></select></label>
+          <label>Rasse <select name="race"></select></label>
+          <label>Bosse
+            <select name="targets"><option>1</option><option>2</option><option>3</option></select>
+          </label>
+          <label>Fight
+            <select name="fight">
+              <option value="time">Auf Zeit</option>
+              <option value="health">Bis die Bosse tot sind</option>
+            </select>
+          </label>
+          <label data-for="time">Sekunden <input name="seconds" type="number" min="10" max="900" value="120" /></label>
+          <label data-for="health" hidden>Leben pro Boss <input name="health" type="number" min="10000" step="10000" value="100000" /></label>
+          <label class="wide">Rota für den Sim (APL-JSON, optional) <input name="rotation" type="file" accept=".json,application/json" /></label>
+          <button type="submit">Fight starten</button>
+        </form>
+        <p id="status" role="status"></p>
+        <details class="help">
+          <summary>Steuerung</summary>
+          <p>Tippe auf die Spell-Buttons oder nutze die Tasten 1 bis 0, -, =, Q, E, R. Tippe auf einen Boss, um ihn anzuvisieren
+          (am PC auch Tab oder F1 bis F3). Ein Spell, den du kurz vor Ende des GCD oder eines Casts drückst, wird direkt danach
+          gewirkt. Ein neuer Spell während Mind Flay bricht den Channel ab. Vor dem Pull läuft ein Countdown von 5 Sekunden,
+          in dem du schon casten darfst.</p>
+        </details>
       </section>
+      <section id="stage" hidden></section>
       <footer>
         Rechnet mit dem <a href="https://github.com/gunba/wow-forever-sim">WoW Forever sim</a> (MIT-Lizenz,
         <a href="sim/LICENSE-wow-forever-sim.txt">Lizenztext</a>). Inoffizielles Fan-Projekt, nicht mit Blizzard Entertainment verbunden.

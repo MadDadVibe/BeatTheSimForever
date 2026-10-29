@@ -1,0 +1,31 @@
+import { siteBase } from '../sim/client';
+
+// Names and icons of spells and items, from the sim's database (public/sim/names.json).
+let names: { spell: Record<string, [string, string]>; item: Record<string, [string, string]> } = { spell: {}, item: {} };
+
+export async function loadNames(): Promise<void> {
+  try {
+    names = await (await fetch(new URL('sim/names.json', siteBase))).json();
+  } catch {
+    // Without names the game still works; it shows ids instead.
+  }
+}
+
+const OTHER: Record<string, string> = { 'other:OtherActionManaGain': 'Mana', 'other:OtherActionManaRegen': 'Mana-Regeneration' };
+
+export function label(key: string): string {
+  const [kind, id] = key.split(':');
+  if (kind === 'spell') return names.spell[id]?.[0] ?? `Spell ${id}`;
+  if (kind === 'item') return names.item[id]?.[0] ?? `Item ${id}`;
+  return OTHER[key] ?? key;
+}
+
+export function iconUrl(key: string): string | null {
+  const [kind, id] = key.split(':');
+  const icon = (kind === 'spell' ? names.spell : kind === 'item' ? names.item : {})[id]?.[1];
+  return icon ? new URL(`sim/icons/${icon}.jpg`, siteBase).href : null;
+}
+
+export function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}

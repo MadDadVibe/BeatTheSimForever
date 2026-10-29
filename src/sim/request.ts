@@ -1,5 +1,9 @@
 import { normalizeApl } from './apl';
-import type { SimJob } from './types';
+import type { FightSpec, SimJob, SimProfile } from './types';
+
+const STAT_HEALTH = 34;
+// A live fight until the bosses are dead stops here at the latest.
+const LIVE_HEALTH_LIMIT_SECONDS = 1200;
 
 /**
  * Turns a job into the sim's RaidSimRequest (as JSON) for a fight of this many seconds. (A health fight is run as a
@@ -38,4 +42,23 @@ export function buildRequest(job: SimJob, seconds: number): Record<string, unkno
       debugFirstIteration: true,
     },
   };
+}
+
+/** The request for a live fight the player drives: no rotation, and a health fight really ends when the bosses die. */
+export function buildLiveRequest(profile: SimProfile, targets: number, fight: FightSpec): Record<string, unknown> {
+  const seconds = fight.kind === 'time' ? fight.seconds : LIVE_HEALTH_LIMIT_SECONDS;
+  const req = buildRequest({ profile, targets, fight, iterations: 1, seed: 1 }, seconds) as {
+    raid: { parties: Array<{ players: Array<Record<string, unknown>> }> };
+    encounter: { useHealth?: boolean; targets: Array<{ stats: number[] }> };
+  };
+  // The player presses the buttons; no rotation may act for them.
+  req.raid.parties[0].players[0].rotation = { type: 'TypeAPL', priorityList: [] };
+  if (fight.kind === 'health') {
+    req.encounter.useHealth = true;
+    for (const t of req.encounter.targets) {
+      t.stats = [...t.stats];
+      t.stats[STAT_HEALTH] = fight.healthPerTarget;
+    }
+  }
+  return req;
 }
