@@ -57,7 +57,7 @@ const SHORT: Record<string, string> = {
   'Swift Judgement': 'SJ', "Templar's Bulwark": 'Bulw.', 'Righteous Fury': 'RF',
   'Stoneform': 'Stone', 'Berserking': 'Zerk', 'Blood Fury': 'BFury', 'Demonic Rune': 'Rune', 'Thistle Tea': 'Tea',
   'Goblin Sapper Charge': 'Sapper', 'Thorium Grenade': 'Nade', 'Starshards': 'Star', 'Dark Sacrifice': 'DS',
-  'Elune\'s Grace': 'Elune', 'Eureka!': 'Eureka',
+  'Elune\'s Grace': 'Elune', 'Rage of the Farseer': 'RotF', 'Eureka!': 'Eureka',
 };
 
 function short(key: string): string {
@@ -173,6 +173,10 @@ async function draft(specKey: string, simClass: string) {
   if (tank) stats = [...stats.filter((s) => s !== 'Stamina' && s !== 'Health'), ...TANK_STATS];
   if (['retribution', 'retribution_physical', 'enhancement', 'feral_tank_druid', 'protection_paladin'].includes(build)) stats = [...stats, 'SpellPower', 'Mana'];
 
+  // Lasting buffs the profile casts before the pull (aspects, marks, a warlock's pets and sacrifice): up from the start.
+  const prepull = readRotation({ priorityList: (profile.player.rotation as { prepullActions?: unknown[] }).prepullActions ?? [] }).casts;
+  const startBuffs = prepull.filter((k) => /^(Aspect of|Hunter's Mark|Shadowform|Demonic Sacrifice|Summon |Soul Link)/.test(nameOf(k)));
+
   const playerAuras = [...rot.selfAuras, ...bar.map((b) => b.key)].filter((k, i, a) => a.indexOf(k) === i && !k.startsWith('move:') && !rot.dots.has(k) && !rot.targetAuras.has(k));
   const targetAuras = [...rot.dots, ...rot.targetAuras].filter((k, i, a) => a.indexOf(k) === i);
 
@@ -182,6 +186,7 @@ async function draft(specKey: string, simClass: string) {
     tree,
     defaultRace,
     resources,
+    ...(startBuffs.length ? { startBuffs } : {}),
     bar,
     targetAuras,
     playerAuras,
