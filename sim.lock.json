@@ -1,0 +1,5 @@
+{
+  "repo": "https://github.com/gunba/wow-forever-sim",
+  "commit": "1cc5ae1e9abdbf941b7326d2d90421822dce31ba",
+  "presets": { "shadow-priest": "artifacts/modelled_gear/ui_profiles/shadow__*.json" }
+}
