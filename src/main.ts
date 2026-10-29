@@ -2,10 +2,10 @@ import './style.css';
 import { CLASSES } from './classes';
 import type { ClassModule } from './classes/types';
 import { runFight, type FightSetup } from './game/fight';
-import { loadNames } from './game/names';
+import { iconUrl, loadNames } from './game/names';
 import { showResults } from './game/results';
 import { rotationFromExport } from './sim/apl';
-import { loadEngine, loadProfiles } from './sim/client';
+import { loadEngine, loadProfiles, simFile } from './sim/client';
 import type { AplRotation, FightSpec, SimProfile } from './sim/types';
 
 // The setup screen, and the way from it into a fight and on to its results.
@@ -102,3 +102,18 @@ Promise.all([loadClass(), loadNames(), loadEngine()])
     start.textContent = 'Fight starten';
   })
   .catch((err) => (status.textContent = `Laden fehlgeschlagen: ${err.message}`));
+
+// Offline play and "add to home screen".
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+  // On the first visit the page loaded before the offline cache existed: hand it what the game needs.
+  navigator.serviceWorker.ready.then((reg) => {
+    const loaded = performance.getEntriesByType('resource').map((e) => e.name);
+    const engine = ['lib.wasm', 'wasm_exec.js', 'names.json', ...CLASSES.map((c) => `presets/${c.key}.json`)].map(simFile);
+    const icons = CLASSES.flatMap((c) => [...c.bar.map((b) => b.key), ...c.targetAuras, ...c.playerAuras]).map(iconUrl).filter((u): u is string => !!u);
+    reg.active?.postMessage({ cache: [location.href.split('#')[0], ...loaded, ...engine, ...icons] });
+  });
+}
+if (!window.matchMedia('(display-mode: standalone)').matches && matchMedia('(pointer: coarse)').matches) {
+  document.querySelector<HTMLElement>('.install')!.hidden = false;
+}

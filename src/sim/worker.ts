@@ -11,7 +11,7 @@ type Engine = LiveEngine & { raidSimJson: RaidSimJson };
 let ready: Promise<Engine> | null = null;
 // simBase: the site's address; the engine's files are under sim/ there.
 function load(simBase: string): Promise<Engine> {
-  const simUrl = (file: string) => new URL('sim/' + file, simBase).href;
+  const simUrl = (file: string) => new URL(`sim/${file}?v=${__SIM_VERSION__}`, simBase).href;
   importScripts(simUrl('wasm_exec.js'));
   const g = self as unknown as Engine & { wasmready?: () => void };
   const started = new Promise<void>((resolve) => (g.wasmready = resolve));

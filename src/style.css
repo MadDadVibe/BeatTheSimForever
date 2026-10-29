@@ -125,3 +125,26 @@ table.compare { width: 100%; border-collapse: collapse; font-size: 0.9rem; margi
 .axis { position: relative; height: 16px; }
 .mark { position: absolute; font-size: 0.7rem; color: var(--muted); transform: translateX(-50%); }
 .mark::before { content: ''; position: absolute; left: 50%; top: -6px; height: 4px; border-left: 1px solid var(--line); }
+
+/* Fight on a phone */
+body:has(.in-fight) { overscroll-behavior: none; }
+.focus { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; flex: 1; min-height: 90px; }
+.focus-name { color: var(--muted); font-size: 0.85rem; }
+.auras.big { justify-content: center; gap: 10px; }
+.auras.big .aura { width: 60px; height: 60px; border-radius: 10px; }
+.auras.big .aura i { font-size: 0.95rem; font-weight: 700; }
+.aura.missing { opacity: 0.35; outline: 2px dashed var(--bad); outline-offset: -2px; }
+.me { margin-top: 0; }
+@media (max-height: 560px) and (orientation: landscape) {
+  .fight { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto 1fr auto; column-gap: 12px; }
+  .fight-top, .bosses { grid-column: 1 / -1; }
+  .focus { grid-column: 1; }
+  .me { grid-column: 1; }
+  .fight { min-height: calc(100dvh - 16px); gap: 6px; }
+  .action-bar { grid-column: 2; grid-row: 3 / 5; align-self: end; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 6px; }
+  .boss { min-height: 0; padding: 6px 8px; gap: 4px; }
+  .auras { min-height: 28px; }
+  .aura { width: 28px; height: 28px; }
+  .auras.big .aura { width: 48px; height: 48px; }
+  .focus { min-height: 0; }
+}
