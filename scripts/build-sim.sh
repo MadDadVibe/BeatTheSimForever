@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Builds the WoW Forever sim (https://github.com/gunba/wow-forever-sim, MIT) to WebAssembly and copies what the game
-# needs into public/sim/: lib.wasm, Go's wasm_exec.js, the class presets and the sim's licence.
+# Builds the game's engine (engine/: the WoW Forever sim, https://github.com/gunba/wow-forever-sim, MIT, plus the live
+# fight the player drives) to WebAssembly and copies what the game needs into public/sim/: lib.wasm, Go's
+# wasm_exec.js, the class presets, spell names and the sim's licence.
 # The sim version is pinned in sim.lock.json. Needs Go, git, curl and unzip; protoc is downloaded if missing.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -38,7 +39,7 @@ fi
 
 (cd "$SRC" && protoc -I=./proto --go_out=./sim/core ./proto/*.proto)
 mkdir -p "$OUT/presets"
-(cd "$SRC" && GOOS=js GOARCH=wasm go build -tags with_db -o "$OUT/lib.wasm" ./sim/wasm/)
+(cd "$ROOT/engine" && GOOS=js GOARCH=wasm go build -tags with_db -o "$OUT/lib.wasm" .)
 WASM_EXEC=$(go env GOROOT)/lib/wasm/wasm_exec.js
 [ -f "$WASM_EXEC" ] || WASM_EXEC=$(go env GOROOT)/misc/wasm/wasm_exec.js
 cp "$WASM_EXEC" "$OUT/wasm_exec.js"
