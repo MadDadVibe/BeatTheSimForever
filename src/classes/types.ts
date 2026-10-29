@@ -22,6 +22,8 @@ export interface ClassModule {
   spec: string;
   /** Race used when nothing else is picked; one of the keys in the profiles file. */
   defaultRace: string;
+  /** Lasting buffs that are up before the fight starts (e.g. Shadowform), for you and for the sim. */
+  startBuffs?: string[];
   /** The action bar, in order. Buttons the character does not have (another race's racial, say) are left out. */
   bar: BarButton[];
   /** Effects shown on each boss (the class's DoTs) and on the player (its buffs), in this order. */

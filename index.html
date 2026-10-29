@@ -32,6 +32,7 @@
           </label>
           <label data-for="time">Sekunden <input name="seconds" type="number" min="10" max="900" value="120" /></label>
           <label data-for="health" hidden>Leben pro Boss <input name="health" type="number" min="10000" step="10000" value="100000" /></label>
+          <label class="wide check"><input name="tier1" type="checkbox" /> Tier-1-Set-Boni (der 5er-Bonus kürzt z. B. den Cooldown von Devouring Plague)</label>
           <label class="wide check"><input name="hints" type="checkbox" /> Tipp anzeigen: welche Taste laut Sim als Nächstes optimal ist</label>
           <label class="wide">Rota für den Sim (APL-JSON, optional) <input name="rotation" type="file" accept=".json,application/json" /></label>
           <button type="submit">Fight starten</button>

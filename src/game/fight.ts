@@ -52,7 +52,7 @@ type Phase = 'prep' | 'fight';
 
 export function runFight(root: HTMLElement, setup: FightSetup): Promise<FightLog> {
   return new Promise((resolve, reject) => {
-    live.start(setup.profile, setup.targets, setup.fight, setup.countdown, setup.rotation).then((start) => {
+    live.start(setup.profile, setup.targets, setup.fight, setup.countdown, setup.rotation, setup.cls.startBuffs).then((start) => {
       new FightScreen(root, setup, start.spells, start.state, resolve);
     }, reject);
   });
@@ -452,7 +452,8 @@ class FightScreen {
     if (this.phase !== 'fight') return undefined;
     if (t < 0) {
       const done = new Set(this.events.filter((e) => e.type === 'cast').map((e) => (e as { key: string }).key));
-      return this.prepull.find((p) => !done.has(p.key) && t >= p.at - 1.5)?.key;
+      // Casts before the countdown (the start buffs) are done already.
+      return this.prepull.find((p) => p.at >= -this.setup.countdown && !done.has(p.key) && t >= p.at - 1.5)?.key;
     }
     return this.state.hint;
   }

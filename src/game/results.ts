@@ -56,7 +56,7 @@ export async function showResults(root: HTMLElement, log: FightLog, rotation: Ap
   try {
     // The same fight for the sim. A fight you ended early is compared over the time it lasted.
     const fight = log.abandoned ? { kind: 'time' as const, seconds: log.duration } : setup.fight;
-    sim = await runSim({ profile: setup.profile, rotation, targets: setup.targets, fight, iterations: 1000, seed: Date.now() % 1e9 });
+    sim = await runSim({ profile: setup.profile, rotation, startBuffs: setup.cls.startBuffs, targets: setup.targets, fight, iterations: 1000, seed: Date.now() % 1e9 });
   } catch (err) {
     el('sim').innerHTML = `<small>Sim</small><strong>–</strong><small>${escapeHtml(err instanceof Error ? err.message : String(err))}</small>`;
     el('findings').innerHTML = '';

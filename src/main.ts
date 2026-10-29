@@ -40,9 +40,12 @@ function readSetup(): FightSetup {
   const fight: FightSpec = field<HTMLSelectElement>('fight').value === 'time'
     ? { kind: 'time', seconds: Number(field<HTMLInputElement>('seconds').value) }
     : { kind: 'health', healthPerTarget: Number(field<HTMLInputElement>('health').value) };
+  // The sim's profiles count on the Tier 1 set bonuses; without the set they are switched off, for you and the sim.
+  const base = profiles[field<HTMLSelectElement>('race').value];
+  const profile = { ...base, player: { ...base.player, foreverTier1Bonuses: field<HTMLInputElement>('tier1').checked } };
   return {
     cls: currentClass(),
-    profile: profiles[field<HTMLSelectElement>('race').value],
+    profile,
     targets: Number(field<HTMLSelectElement>('targets').value),
     fight,
     countdown: 5,
@@ -100,6 +103,12 @@ function readHints(): boolean {
   }
 }
 field<HTMLInputElement>('hints').checked = readHints();
+try {
+  field<HTMLInputElement>('tier1').checked = localStorage.getItem('tier1') === '1';
+} catch { /* off */ }
+field<HTMLInputElement>('tier1').addEventListener('change', () => {
+  try { localStorage.setItem('tier1', field<HTMLInputElement>('tier1').checked ? '1' : '0'); } catch { /* not remembered */ }
+});
 field<HTMLInputElement>('hints').addEventListener('change', () => {
   try { localStorage.setItem('hints', field<HTMLInputElement>('hints').checked ? '1' : '0'); } catch { /* not remembered */ }
 });
