@@ -47,5 +47,7 @@ cp "$SRC/LICENSE" "$OUT/LICENSE-wow-forever-sim.txt"
 
 # Presets: one file per class, holding the sim's ranked profile for each race.
 node "$ROOT/scripts/collect-presets.mjs" "$SRC" "$OUT/presets"
-echo "{\"repo\":\"$REPO\",\"commit\":\"$COMMIT\"}" > "$OUT/version.json"
+# The version goes into every address of these files, so a browser (or the offline cache) never mixes old and new.
+HASH=$(cat "$OUT/lib.wasm" "$OUT/names.json" "$OUT"/presets/*.json | sha256sum | cut -c1-12)
+echo "{\"repo\":\"$REPO\",\"commit\":\"$COMMIT\",\"hash\":\"$HASH\"}" > "$OUT/version.json"
 echo "Sim built: $OUT"

@@ -10,6 +10,9 @@ const pending = new Map<number, { resolve: (v: unknown) => void; reject: (e: Err
 
 export const siteBase = new URL(import.meta.env.BASE_URL, document.baseURI).href;
 
+/** The address of one of the engine's files (public/sim/), with its version. */
+export const simFile = (path: string) => new URL(`sim/${path}?v=${__SIM_VERSION__}`, siteBase).href;
+
 function send<T>(type: WorkerRequest['type'], payload: object): Promise<T> {
   if (!worker) {
     worker = new Worker(new URL('./worker.ts', import.meta.url));
@@ -42,7 +45,7 @@ export const live = {
 
 /** The sim's ranked profiles for a class, by race. */
 export async function loadProfiles(classKey: string): Promise<Record<string, SimProfile>> {
-  const res = await fetch(new URL(`sim/presets/${classKey}.json`, siteBase));
+  const res = await fetch(simFile(`presets/${classKey}.json`));
   if (!res.ok) throw new Error(`No sim profiles for ${classKey}`);
   return res.json();
 }

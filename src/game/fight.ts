@@ -64,6 +64,7 @@ class FightScreen {
   private channelEnds = 0;
   private channelLength = 1;
   private playerName: string;
+  private wakeLock: WakeLockSentinel | null = null;
   private el: Record<string, HTMLElement> = {};
 
   constructor(
@@ -78,6 +79,8 @@ class FightScreen {
     this.damageBy = Array(setup.targets).fill(0);
     this.playerName = String(setup.profile.player.name ?? 'Player');
     this.render(spells);
+    // Keep the screen on during the fight.
+    navigator.wakeLock?.request('screen').then((l) => (this.wakeLock = l), () => {});
     this.onKey = this.onKey.bind(this);
     window.addEventListener('keydown', this.onKey);
     this.frame = requestAnimationFrame(() => this.tick());
@@ -104,6 +107,10 @@ class FightScreen {
               <span class="bar boss-bar"><span data-el="bossFill${i}"></span><em data-el="bossText${i}"></em></span>
               <span class="auras" data-el="bossAuras${i}"></span>
             </button>`).join('')}
+        </section>
+        <section class="focus">
+          <span class="focus-name" data-el="focusName"></span>
+          <div class="auras big" data-el="focusAuras"></div>
         </section>
         <section class="me">
           <div class="countdown" data-el="countdown"></div>
@@ -254,6 +261,10 @@ class FightScreen {
       this.el['bossAuras' + i].innerHTML = auraIcons(cls.targetAuras, s.targets[i]?.auras ?? [], since);
     }
 
+    // The boss you aim at, large
+    this.el.focusName.textContent = this.setup.targets > 1 ? `Ziel: Boss ${this.target + 1}` : '';
+    this.el.focusAuras.innerHTML = auraIcons(cls.targetAuras, s.targets[this.target]?.auras ?? [], since, true);
+
     // You
     this.el.playerAuras.innerHTML = auraIcons(cls.playerAuras, s.auras, since);
     this.el.manaFill.style.width = `${(100 * s.mana) / Math.max(1, s.maxMana)}%`;
@@ -315,16 +326,21 @@ class FightScreen {
     this.done = true;
     cancelAnimationFrame(this.frame);
     window.removeEventListener('keydown', this.onKey);
+    void this.wakeLock?.release().catch(() => {});
     const duration = Math.max(0.1, abandoned ? this.now() : this.state.time);
     this.finish({ setup: this.setup, duration, timeline: this.events, abandoned });
   }
 }
 
-function auraIcons(show: string[], auras: LiveState['auras'], since: number): string {
+/** The effects in show that are up, as icons with the time left. withMissing: also show those that are not up, dimmed. */
+function auraIcons(show: string[], auras: LiveState['auras'], since: number, withMissing = false): string {
   return show
     .map((key) => {
       const a = auras.find((x) => x.key === key);
-      if (!a) return '';
+      if (!a) {
+        const url = withMissing ? iconUrl(key) : null;
+        return url ? `<span class="aura missing" title="${escapeHtml(label(key))}"><img src="${url}" alt="" onerror="this.remove()"></span>` : '';
+      }
       const left = a.remaining < 0 ? '' : Math.max(0, a.remaining - since);
       const icon = iconUrl(key);
       const low = left !== '' && left < 3 ? ' low' : '';
