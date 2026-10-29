@@ -1,0 +1,125 @@
+{
+  "key": "protection-warrior",
+  "name": "Protection Warrior",
+  "tree": "Protection",
+  "defaultRace": "undead",
+  "resources": [
+    "rage"
+  ],
+  "bar": [
+    {
+      "key": "spell:11551",
+      "short": "Shout"
+    },
+    {
+      "key": "spell:11597",
+      "short": "Sunder"
+    },
+    {
+      "key": "spell:11581",
+      "short": "TC"
+    },
+    {
+      "key": "spell:11556",
+      "short": "Demo"
+    },
+    {
+      "key": "spell:11601",
+      "short": "Rev"
+    },
+    {
+      "key": "spell:23925",
+      "short": "SS"
+    },
+    {
+      "key": "spell:20569",
+      "short": "Cleave"
+    },
+    {
+      "key": "spell:11567",
+      "short": "HS"
+    },
+    {
+      "key": "spell:871",
+      "short": "Wall"
+    },
+    {
+      "key": "spell:12975",
+      "short": "LS"
+    },
+    {
+      "key": "spell:2565",
+      "short": "Block"
+    },
+    {
+      "key": "spell:2687",
+      "short": "Blood"
+    },
+    {
+      "key": "spell:1719",
+      "short": "Reck"
+    },
+    {
+      "key": "spell:1259813",
+      "short": "Eureka"
+    },
+    {
+      "key": "spell:1259799",
+      "short": "EL"
+    },
+    {
+      "key": "spell:20572",
+      "short": "BFury"
+    },
+    {
+      "key": "spell:20554",
+      "short": "Zerk"
+    }
+  ],
+  "targetAuras": [
+    "spell:11597",
+    "spell:11581",
+    "spell:11556"
+  ],
+  "playerAuras": [
+    "spell:11551",
+    "spell:2565",
+    "spell:11601",
+    "spell:23925",
+    "spell:20569",
+    "spell:11567",
+    "spell:871",
+    "spell:12975",
+    "spell:2687",
+    "spell:1719",
+    "spell:1259813",
+    "spell:1259799",
+    "spell:20572",
+    "spell:20554"
+  ],
+  "stats": [
+    "Strength",
+    "Agility",
+    "AttackPower",
+    "MeleeHit",
+    "MeleeCrit",
+    "MeleeHaste",
+    "Expertise",
+    "ArmorPenetration",
+    "Stamina",
+    "Health",
+    "Armor",
+    "Defense",
+    "Dodge",
+    "Parry",
+    "Block",
+    "BlockValue"
+  ],
+  "review": {
+    "dots": [],
+    "keepOnCooldown": [
+      "spell:11581",
+      "spell:23925"
+    ]
+  }
+}

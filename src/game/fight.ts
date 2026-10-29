@@ -1,6 +1,6 @@
-import type { ClassModule } from '../classes/types';
+import type { SpecModule } from '../classes/types';
 import { live } from '../sim/client';
-import type { CastBlock, LiveSpell, LiveState } from '../sim/live';
+import type { CastBlock, LiveSpell, LiveState, Resource } from '../sim/live';
 import { parseTimeline } from '../sim/result';
 import type { AplRotation, FightSpec, SimProfile, TimelineEvent } from '../sim/types';
 import { bindable, bindKey, keyLabel, loadLayout, saveLayout, swapSlots, type BarSlot } from './layout';
@@ -14,7 +14,8 @@ import { fillSheet, sheetSkeleton } from './sheet';
 // ready (space bar or the button).
 
 export interface FightSetup {
-  cls: ClassModule;
+  /** The spec you play. */
+  spec: SpecModule;
   profile: SimProfile;
   targets: number;
   fight: FightSpec;
@@ -43,6 +44,9 @@ const BLOCK_TEXT: Record<CastBlock, string> = {
   gcd: 'Globaler Cooldown',
   cooldown: 'Noch nicht bereit',
   mana: 'Nicht genug Mana',
+  rage: 'Nicht genug Wut',
+  energy: 'Nicht genug Energie',
+  focus: 'Nicht genug Fokus',
   cannot: 'Geht gerade nicht',
 };
 
@@ -52,7 +56,7 @@ type Phase = 'prep' | 'fight';
 
 export function runFight(root: HTMLElement, setup: FightSetup): Promise<FightLog> {
   return new Promise((resolve, reject) => {
-    live.start(setup.profile, setup.targets, setup.fight, setup.countdown, setup.rotation, setup.cls.startBuffs).then((start) => {
+    live.start(setup.profile, setup.targets, setup.fight, setup.countdown, setup.rotation, setup.spec.startBuffs).then((start) => {
       new FightScreen(root, setup, start.spells, start.state, resolve);
     }, reject);
   });
@@ -106,7 +110,7 @@ class FightScreen {
     this.damageBy = Array(setup.targets).fill(0);
     this.playerName = String(setup.profile.player.name ?? 'Player');
     this.spells = spells;
-    this.slots = loadLayout(setup.cls, new Set(spells.map((s) => s.key)));
+    this.slots = loadLayout(setup.spec, new Set(spells.map((s) => s.key)));
     this.hints = setup.hints;
     this.prepull = prepullCasts(setup.rotation);
     this.render();
@@ -122,7 +126,7 @@ class FightScreen {
   }
 
   private render() {
-    const { cls, targets, profile } = this.setup;
+    const { spec, targets, profile } = this.setup;
     this.root.innerHTML = `
       <div class="fight prepping" data-el="fight">
         <header class="fight-top">
@@ -140,7 +144,7 @@ class FightScreen {
             </button>`).join('')}
         </section>
         <section class="prep" data-el="prep">
-          <div class="sheet" data-el="sheet">${sheetSkeleton(cls, profile)}</div>
+          <div class="sheet" data-el="sheet">${sheetSkeleton(spec, profile)}</div>
           <p class="muted small prep-help">Aktionsleiste anpassen: Spell auf einen anderen ziehen tauscht die beiden. Mit der Maus
             auf einen Spell zeigen (am Handy antippen) und eine Taste drücken legt die Taste neu fest; Rücktaste entfernt sie.</p>
           <button class="ready" data-el="ready" type="button">Bereit <small>(Leertaste)</small></button>
@@ -153,13 +157,15 @@ class FightScreen {
           <div class="countdown" data-el="countdown"></div>
           <div class="auras player-auras" data-el="playerAuras"></div>
           <div class="bar cast-bar" data-el="castBar"><span data-el="castFill"></span><em data-el="castText"></em></div>
-          <div class="bar mana-bar"><span data-el="manaFill"></span><em data-el="manaText"></em></div>
+          ${spec.resources.map((r) => r === 'combo'
+            ? '<div class="combo" data-el="combo">' + '<i></i>'.repeat(5) + '</div>'
+            : `<div class="bar ${r}-bar"><span data-el="${r}Fill"></span><em data-el="${r}Text"></em></div>`).join('')}
           <div class="flash" data-el="flash" aria-live="polite"></div>
         </section>
         <nav class="action-bar" data-el="bar"></nav>
       </div>`;
     this.root.querySelectorAll<HTMLElement>('[data-el]').forEach((el) => (this.el[el.dataset.el!] = el));
-    void fillSheet(this.el.sheet, cls, profile);
+    void fillSheet(this.el.sheet, spec, profile);
 
     this.renderBar();
     this.root.querySelectorAll<HTMLElement>('[data-boss]').forEach((el) =>
@@ -244,7 +250,7 @@ class FightScreen {
     const to = this.slotAt(e.clientX, e.clientY);
     if (to !== null && to !== d.from) {
       this.slots = swapSlots(this.slots, d.from, to);
-      saveLayout(this.setup.cls, this.slots);
+      saveLayout(this.setup.spec, this.slots);
       this.pointed = to;
     }
     this.renderBar();
@@ -258,7 +264,7 @@ class FightScreen {
   /** Ready: the countdown starts. */
   private begin() {
     if (this.phase !== 'prep') return;
-    saveLayout(this.setup.cls, this.slots);
+    saveLayout(this.setup.spec, this.slots);
     this.phase = 'fight';
     this.point(null);
     this.el.fight.classList.remove('prepping');
@@ -282,7 +288,7 @@ class FightScreen {
         e.preventDefault();
         this.slots = bindKey(this.slots, this.pointed, e.key);
       } else return;
-      saveLayout(this.setup.cls, this.slots);
+      saveLayout(this.setup.spec, this.slots);
       this.renderBar();
       return;
     }
@@ -371,7 +377,7 @@ class FightScreen {
   private draw(t: number) {
     const s = this.state;
     const since = (performance.now() - this.stateAt) / 1000; // how far the screen is ahead of the last state
-    const { fight, cls } = this.setup;
+    const { fight, spec } = this.setup;
 
     // Clock and meter
     if (this.phase === 'prep') {
@@ -399,17 +405,24 @@ class FightScreen {
         text.textContent = `${Math.round(this.damageBy[i]).toLocaleString('de-DE')}`;
       }
       this.root.querySelector(`[data-boss="${i}"]`)!.classList.toggle('targeted', i === this.target);
-      this.el['bossAuras' + i].innerHTML = auraIcons(cls.targetAuras, s.targets[i]?.auras ?? [], since);
+      this.el['bossAuras' + i].innerHTML = auraIcons(spec.targetAuras, s.targets[i]?.auras ?? [], since);
     }
 
     // The boss you aim at, large
     this.el.focusName.textContent = this.setup.targets > 1 ? `Ziel: Boss ${this.target + 1}` : '';
-    this.el.focusAuras.innerHTML = auraIcons(cls.targetAuras, s.targets[this.target]?.auras ?? [], since, true);
+    this.el.focusAuras.innerHTML = auraIcons(spec.targetAuras, s.targets[this.target]?.auras ?? [], since, true);
 
     // You
-    this.el.playerAuras.innerHTML = auraIcons(cls.playerAuras, s.auras, since);
-    this.el.manaFill.style.width = `${(100 * s.mana) / Math.max(1, s.maxMana)}%`;
-    this.el.manaText.textContent = `${Math.round(s.mana).toLocaleString('de-DE')} / ${Math.round(s.maxMana).toLocaleString('de-DE')}`;
+    this.el.playerAuras.innerHTML = auraIcons(spec.playerAuras, s.auras, since);
+    for (const r of spec.resources) {
+      if (r === 'combo') {
+        this.el.combo.querySelectorAll('i').forEach((pip, i) => pip.classList.toggle('on', i < (s.combo ?? 0)));
+        continue;
+      }
+      const [now, max] = r === 'mana' ? [s.mana, s.maxMana] : r === 'energy' ? [s.energy ?? 0, s.maxEnergy ?? 100] : [s.rage ?? 0, 100];
+      this.el[r + 'Fill'].style.width = `${(100 * now) / Math.max(1, max)}%`;
+      this.el[r + 'Text'].textContent = `${Math.round(now).toLocaleString('de-DE')} / ${Math.round(max).toLocaleString('de-DE')}`;
+    }
     const bar = this.el.castBar;
     const simNow = s.time + since;
     if (s.cast) {
@@ -431,7 +444,7 @@ class FightScreen {
       this.el.castText.textContent = '';
     }
 
-    // Action bar: cooldowns, the global cooldown, mana and the hint
+    // Action bar: cooldowns, the global cooldown, resources and the hint
     const gcdLeft = Math.max(0, s.gcd - since);
     const hint = this.hintNow(t);
     for (const b of this.buttons) {
@@ -441,7 +454,7 @@ class FightScreen {
       const span = cd > gcdLeft ? Math.max(cd, b.spell.cooldown) : 1.5;
       cdEl.style.setProperty('--p', String(wait > 0 ? clamp(wait / span) : 0));
       cdEl.textContent = cd > 1.5 ? (cd >= 60 ? `${Math.ceil(cd / 60)}m` : Math.ceil(cd).toString()) : '';
-      b.el.classList.toggle('no-mana', s.costs[b.spell.index] > s.mana);
+      b.el.classList.toggle('no-mana', !!b.spell.costType && s.costs[b.spell.index] > have(s, b.spell.costType));
       b.el.classList.toggle('queued', this.queued === b);
       b.el.classList.toggle('hint', this.hints && b.key === hint);
     }
@@ -504,6 +517,11 @@ function auraIcons(show: string[], auras: LiveState['auras'], since: number, wit
       return `<span class="aura${low}" title="${escapeHtml(label(key))}">${icon ? `<img src="${icon}" alt="" onerror="this.remove()">` : ''}${a.stacks > 1 ? `<b>${a.stacks}</b>` : ''}<i>${left === '' ? '' : left < 10 ? left.toFixed(1) : Math.round(left)}</i></span>`;
     })
     .join('');
+}
+
+/** How much of a resource you have now. */
+function have(s: LiveState, r: Resource): number {
+  return r === 'mana' ? s.mana : r === 'rage' ? s.rage ?? 0 : r === 'energy' ? s.energy ?? 0 : Infinity;
 }
 
 const clamp = (x: number) => Math.max(0, Math.min(1, x));

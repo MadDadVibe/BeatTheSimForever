@@ -8,6 +8,8 @@
   --accent-strong: #7d4fd1;
   --line: #2f2a3a;
   --mana: #3f7fe0;
+  --rage: #c43a3a;
+  --energy: #e2c13a;
   --health: #c0392b;
   --cast: #d9a43a;
   --channel: #9b6bff;
@@ -71,6 +73,11 @@ main.in-fight { max-width: 900px; padding: 8px; padding-bottom: max(8px, env(saf
 .cast-bar.casting > span { background: var(--cast); }
 .cast-bar.channeling > span { background: var(--channel); }
 .mana-bar > span { background: var(--mana); }
+.rage-bar > span { background: var(--rage); }
+.energy-bar > span { background: var(--energy); }
+.combo { display: flex; justify-content: center; gap: 6px; }
+.combo i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); background: var(--panel); }
+.combo i.on { background: var(--bad); border-color: var(--bad); }
 .flash { min-height: 1.4em; text-align: center; color: var(--bad); font-weight: 600; font-size: 0.9rem; }
 
 .action-bar { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; }

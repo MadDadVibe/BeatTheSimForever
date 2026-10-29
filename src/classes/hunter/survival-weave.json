@@ -1,0 +1,131 @@
+{
+  "key": "survival-weave-hunter",
+  "name": "SV Weave",
+  "tree": "Survival",
+  "defaultRace": "windshaper",
+  "resources": [
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "move:5",
+      "short": "Nah"
+    },
+    {
+      "key": "move:12",
+      "short": "Fern"
+    },
+    {
+      "key": "spell:14325",
+      "short": "Mark"
+    },
+    {
+      "key": "spell:3045",
+      "short": "RF"
+    },
+    {
+      "key": "spell:2643",
+      "short": "Multi"
+    },
+    {
+      "key": "spell:13555",
+      "short": "Sting"
+    },
+    {
+      "key": "spell:14287",
+      "short": "Arc"
+    },
+    {
+      "key": "spell:14305",
+      "short": "ITrap"
+    },
+    {
+      "key": "spell:14271",
+      "short": "Mong."
+    },
+    {
+      "key": "spell:1317257",
+      "short": "Kick"
+    },
+    {
+      "key": "spell:14266",
+      "short": "Raptor"
+    },
+    {
+      "key": "spell:14322",
+      "short": "Hawk"
+    },
+    {
+      "key": "spell:20904",
+      "short": "Aimed"
+    },
+    {
+      "key": "spell:1259799",
+      "short": "EL"
+    },
+    {
+      "key": "spell:20572",
+      "short": "BFury"
+    },
+    {
+      "key": "spell:20554",
+      "short": "Zerk"
+    },
+    {
+      "key": "item:250943",
+      "short": "Pot"
+    },
+    {
+      "key": "item:12662",
+      "short": "Rune"
+    },
+    {
+      "key": "item:10646",
+      "short": "Sapper"
+    }
+  ],
+  "targetAuras": [
+    "spell:13555",
+    "spell:14305",
+    "spell:14325"
+  ],
+  "playerAuras": [
+    "spell:14266",
+    "spell:3045",
+    "spell:2643",
+    "spell:14287",
+    "spell:14271",
+    "spell:1317257",
+    "spell:14322",
+    "spell:20904",
+    "spell:1259799",
+    "spell:20572",
+    "spell:20554",
+    "item:250943",
+    "item:12662",
+    "item:10646"
+  ],
+  "stats": [
+    "Agility",
+    "Intellect",
+    "Stamina",
+    "RangedAttackPower",
+    "AttackPower",
+    "MeleeHit",
+    "MeleeCrit",
+    "MeleeHaste",
+    "Mana",
+    "Health"
+  ],
+  "review": {
+    "dots": [
+      "spell:13555"
+    ],
+    "keepOnCooldown": [
+      "spell:2643",
+      "spell:14287",
+      "spell:1317257",
+      "spell:20904"
+    ]
+  }
+}

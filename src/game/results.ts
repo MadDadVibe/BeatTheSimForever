@@ -17,7 +17,7 @@ const icon = (key: string, cls = '') => {
 
 export async function showResults(root: HTMLElement, log: FightLog, rotation: AplRotation, again: () => void, settings: () => void) {
   const { setup } = log;
-  const review = setup.cls.review;
+  const review = setup.spec.review;
   const you = analyse(log.timeline, log.duration, setup.targets, review);
   const myDps = you.damage / log.duration;
 
@@ -56,7 +56,7 @@ export async function showResults(root: HTMLElement, log: FightLog, rotation: Ap
   try {
     // The same fight for the sim. A fight you ended early is compared over the time it lasted.
     const fight = log.abandoned ? { kind: 'time' as const, seconds: log.duration } : setup.fight;
-    sim = await runSim({ profile: setup.profile, rotation, startBuffs: setup.cls.startBuffs, targets: setup.targets, fight, iterations: 1000, seed: Date.now() % 1e9 });
+    sim = await runSim({ profile: setup.profile, rotation, startBuffs: setup.spec.startBuffs, targets: setup.targets, fight, iterations: 1000, seed: Date.now() % 1e9 });
   } catch (err) {
     el('sim').innerHTML = `<small>Sim</small><strong>–</strong><small>${escapeHtml(err instanceof Error ? err.message : String(err))}</small>`;
     el('findings').innerHTML = '';
@@ -154,7 +154,8 @@ function statsRows(you: FightFacts, sim: FightFacts, review: ReviewConfig): stri
 
 function spellRows(tbody: HTMLElement, you: FightFacts, sim: SimSummary | null) {
   const keys = new Set([...Object.keys(you.casts), ...Object.keys(you.damageBy), ...(sim?.spells.filter((s) => s.castsPerFight > 0 || s.damagePerFight > 0).map((s) => s.key) ?? [])]);
-  const list = [...keys].filter((k) => !k.startsWith('other:')).map((key) => ({
+  // Of the other actions only white hits and auto shots do damage worth listing.
+  const list = [...keys].filter((k) => !k.startsWith('other:') || /^other:[78](:|$)/.test(k)).map((key) => ({
     key,
     casts: you.casts[key] ?? 0,
     damage: you.damageBy[key] ?? 0,
@@ -193,7 +194,7 @@ function lanes(you: FightFacts, sim: FightFacts | null, countdown: number): stri
 function bestShare(log: FightLog, share: number): string {
   const { setup } = log;
   const fight = setup.fight.kind === 'time' ? `t${setup.fight.seconds}` : `h${setup.fight.healthPerTarget}`;
-  const key = `best:${setup.cls.key}:${String(setup.profile.player.race)}:${setup.targets}:${fight}`;
+  const key = `best:${setup.spec.key}:${String(setup.profile.player.race)}:${setup.targets}:${fight}`;
   if (log.abandoned) return '';
   try {
     const before = Number(localStorage.getItem(key) ?? 0);

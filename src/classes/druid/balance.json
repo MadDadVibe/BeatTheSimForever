@@ -1,0 +1,75 @@
+{
+  "key": "balance-druid",
+  "name": "Balance",
+  "tree": "Balance",
+  "defaultRace": "windshaper",
+  "resources": [
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "spell:9835",
+      "short": "MF"
+    },
+    {
+      "key": "spell:24977",
+      "short": "IS"
+    },
+    {
+      "key": "spell:9876",
+      "short": "SF"
+    },
+    {
+      "key": "spell:9912",
+      "short": "Wrath"
+    },
+    {
+      "key": "spell:29166",
+      "short": "Inn"
+    },
+    {
+      "key": "spell:1259799",
+      "short": "EL"
+    },
+    {
+      "key": "item:250937",
+      "short": "Pot"
+    },
+    {
+      "key": "item:12662",
+      "short": "Rune"
+    }
+  ],
+  "targetAuras": [
+    "spell:24977",
+    "spell:9835"
+  ],
+  "playerAuras": [
+    "spell:48518",
+    "spell:9876",
+    "spell:9912",
+    "spell:29166",
+    "spell:1259799",
+    "item:250937",
+    "item:12662"
+  ],
+  "stats": [
+    "Intellect",
+    "Spirit",
+    "Stamina",
+    "SpellPower",
+    "SpellHit",
+    "SpellCrit",
+    "SpellHaste",
+    "MP5",
+    "Mana",
+    "Health"
+  ],
+  "review": {
+    "dots": [
+      "spell:24977",
+      "spell:9835"
+    ],
+    "keepOnCooldown": []
+  }
+}

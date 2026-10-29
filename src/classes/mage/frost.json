@@ -1,0 +1,105 @@
+{
+  "key": "frost-mage",
+  "name": "Frost",
+  "tree": "Frost",
+  "defaultRace": "gnome",
+  "resources": [
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "spell:30455",
+      "short": "IL"
+    },
+    {
+      "key": "spell:10161",
+      "short": "CoC"
+    },
+    {
+      "key": "spell:10181",
+      "short": "FrB"
+    },
+    {
+      "key": "spell:12051",
+      "short": "Evo"
+    },
+    {
+      "key": "spell:1259817",
+      "short": "Eureka"
+    },
+    {
+      "key": "spell:12472",
+      "short": "CS"
+    },
+    {
+      "key": "spell:20572",
+      "short": "BFury"
+    },
+    {
+      "key": "spell:20554",
+      "short": "Zerk"
+    },
+    {
+      "key": "item:8008",
+      "short": "Ruby"
+    },
+    {
+      "key": "item:13444",
+      "short": "Pot"
+    },
+    {
+      "key": "item:12662",
+      "short": "Rune"
+    },
+    {
+      "key": "item:5514",
+      "short": "Agate"
+    },
+    {
+      "key": "item:5513",
+      "short": "Jade"
+    },
+    {
+      "key": "item:8007",
+      "short": "Citrin"
+    }
+  ],
+  "targetAuras": [],
+  "playerAuras": [
+    "spell:44543",
+    "spell:12579",
+    "spell:30455",
+    "spell:10161",
+    "spell:10181",
+    "spell:12051",
+    "spell:1259817",
+    "spell:12472",
+    "spell:20572",
+    "spell:20554",
+    "item:8008",
+    "item:13444",
+    "item:12662",
+    "item:5514",
+    "item:5513",
+    "item:8007"
+  ],
+  "stats": [
+    "Intellect",
+    "Spirit",
+    "Stamina",
+    "SpellPower",
+    "FrostPower",
+    "SpellHit",
+    "SpellCrit",
+    "SpellHaste",
+    "MP5",
+    "Mana",
+    "Health"
+  ],
+  "review": {
+    "dots": [],
+    "keepOnCooldown": [
+      "spell:10161"
+    ]
+  }
+}

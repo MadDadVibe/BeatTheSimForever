@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { shadowPriest } from '../src/classes/shadow-priest';
+import { SPECS } from '../src/classes';
 import { analyse, compare } from '../src/game/analysis';
 import { runJob } from '../src/sim/run';
 import type { TimelineEvent } from '../src/sim/types';
 import { loadSim, profiles, simBuilt } from './sim-node';
+
+const shadowPriest = SPECS.find((s) => s.key === 'shadow-priest')!;
 
 const review = shadowPriest.review;
 const SWP = 'spell:10894', MF = 'spell:18807', MB = 'spell:10947';

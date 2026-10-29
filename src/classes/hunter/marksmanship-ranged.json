@@ -1,0 +1,107 @@
+{
+  "key": "marksmanship-ranged-hunter",
+  "name": "Marksmanship",
+  "tree": "Marksmanship",
+  "defaultRace": "night_elf",
+  "resources": [
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "spell:3045",
+      "short": "RF"
+    },
+    {
+      "key": "spell:20904",
+      "short": "Aimed"
+    },
+    {
+      "key": "spell:2643",
+      "short": "Multi"
+    },
+    {
+      "key": "spell:13555",
+      "short": "Sting"
+    },
+    {
+      "key": "spell:14287",
+      "short": "Arc"
+    },
+    {
+      "key": "spell:1310786",
+      "short": "Sniper"
+    },
+    {
+      "key": "spell:14322",
+      "short": "Hawk"
+    },
+    {
+      "key": "spell:14305",
+      "short": "ITrap"
+    },
+    {
+      "key": "spell:1259799",
+      "short": "EL"
+    },
+    {
+      "key": "spell:20572",
+      "short": "BFury"
+    },
+    {
+      "key": "spell:20554",
+      "short": "Zerk"
+    },
+    {
+      "key": "item:13444",
+      "short": "Pot"
+    },
+    {
+      "key": "item:12662",
+      "short": "Rune"
+    },
+    {
+      "key": "item:15993",
+      "short": "Nade"
+    }
+  ],
+  "targetAuras": [
+    "spell:13555"
+  ],
+  "playerAuras": [
+    "spell:3045",
+    "spell:20904",
+    "spell:2643",
+    "spell:14287",
+    "spell:1310786",
+    "spell:14322",
+    "spell:14305",
+    "spell:1259799",
+    "spell:20572",
+    "spell:20554",
+    "item:13444",
+    "item:12662",
+    "item:15993"
+  ],
+  "stats": [
+    "Agility",
+    "Intellect",
+    "Stamina",
+    "RangedAttackPower",
+    "AttackPower",
+    "MeleeHit",
+    "MeleeCrit",
+    "MeleeHaste",
+    "Mana",
+    "Health"
+  ],
+  "review": {
+    "dots": [
+      "spell:13555"
+    ],
+    "keepOnCooldown": [
+      "spell:20904",
+      "spell:14287",
+      "spell:1310786"
+    ]
+  }
+}

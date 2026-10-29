@@ -11,9 +11,20 @@ export async function loadNames(): Promise<void> {
   }
 }
 
-const OTHER: Record<string, string> = { 'other:OtherActionManaGain': 'Mana', 'other:OtherActionManaRegen': 'Mana-Regeneration' };
+const OTHER: Record<string, string> = {
+  'other:OtherActionManaGain': 'Mana',
+  'other:OtherActionManaRegen': 'Mana-Regeneration',
+  'other:7': 'Nahkampf',
+  'other:7:1': 'Nahkampf (Haupthand)',
+  'other:7:2': 'Nahkampf (Nebenhand)',
+  'other:7:3': 'Nahkampf (Extraangriff)',
+  'other:8': 'Autoschuss',
+};
+const PET = 'pet:';
 
 export function label(key: string): string {
+  if (key.startsWith(PET)) return `Pet: ${label(key.slice(PET.length))}`;
+  if (key.startsWith('move:')) return `Laufen auf ${key.slice(5)} Meter`;
   const [kind, id] = key.split(':');
   if (kind === 'spell') return names.spell[id]?.[0] ?? `Spell ${id}`;
   if (kind === 'item') return names.item[id]?.[0] ?? `Item ${id}`;
@@ -21,6 +32,7 @@ export function label(key: string): string {
 }
 
 export function iconUrl(key: string): string | null {
+  if (key.startsWith(PET)) key = key.slice(PET.length);
   const [kind, id] = key.split(':');
   const icon = (kind === 'spell' ? names.spell : kind === 'item' ? names.item : {})[id]?.[1];
   return icon ? simFile(`icons/${icon}.jpg`) : null;

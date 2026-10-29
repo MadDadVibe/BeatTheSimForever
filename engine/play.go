@@ -4,10 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"reflect"
 	"runtime/debug"
+	"slices"
+	"strconv"
 	"strings"
 	"syscall/js"
 	"time"
+	"unsafe"
 
 	"github.com/wowsims/classic/sim/core"
 	"github.com/wowsims/classic/sim/core/proto"
@@ -19,10 +23,22 @@ import (
 var live *liveFight
 
 type liveFight struct {
-	sim     *core.Simulation
-	player  *core.Character
-	logs    strings.Builder
+	sim    *core.Simulation
+	player *core.Character
+	logs   strings.Builder
 	spells []*core.Spell // castable spells, by the index the page uses
+	// Distances the rotation moves to (a hunter weaving melee between shots); each is a button after the spells.
+	moves    []float64
+	rotation *proto.APLRotation // the rotation as configured, for what the parsed one does not tell (see hint)
+}
+
+func moveKey(yards float64) string { return fmt.Sprintf("move:%g", yards) }
+
+// moveRange is the distance a "move" entry of the rotation goes to, when it is a fixed one.
+func moveRange(action *proto.APLAction) (float64, bool) {
+	val := action.GetMove().GetRangeFromTarget().GetConst().GetVal()
+	yards, err := strconv.ParseFloat(strings.TrimSuffix(val, "y"), 64)
+	return yards, val != "" && err == nil
 }
 
 // jsonCall wraps f so it is called with its first argument parsed from JSON and answers in JSON. A Go panic becomes
@@ -87,6 +103,29 @@ type spellInfo struct {
 	Cooldown  float64 `json:"cooldown"`
 	Channeled bool    `json:"channeled"`
 	Cost      float64 `json:"cost"`
+	// What it costs: "mana", "rage", "energy" or "focus"; empty when free.
+	CostType string `json:"costType"`
+	// A major cooldown (a trinket, a racial, a class cooldown) the sim's rotation uses whenever it is ready.
+	Major bool `json:"major"`
+	// A major cooldown for staying alive, which the sim's rotation leaves alone.
+	Survival bool `json:"survival"`
+}
+
+func costType(spell *core.Spell) string {
+	if spell.Cost == nil {
+		return ""
+	}
+	switch spell.Cost.CostType() {
+	case core.CostTypeMana:
+		return "mana"
+	case core.CostTypeRage:
+		return "rage"
+	case core.CostTypeEnergy:
+		return "energy"
+	case core.CostTypeFocus:
+		return "focus"
+	}
+	return ""
 }
 
 func playStart(in startIn) (any, error) {
@@ -120,6 +159,13 @@ func playStart(in startIn) (any, error) {
 	s.CurrentTime = start
 	f.logs.Reset()
 	f.player = s.Raid.Parties[0].Players[0].GetCharacter()
+	f.rotation = rsr.Raid.Parties[0].Players[0].Rotation
+	for _, item := range f.rotation.GetPriorityList() {
+		if yards, ok := moveRange(item.GetAction()); ok && !slices.Contains(f.moves, yards) {
+			f.moves = append(f.moves, yards)
+		}
+	}
+	slices.Sort(f.moves)
 	live = f
 
 	var spells []spellInfo
@@ -135,12 +181,20 @@ func playStart(in startIn) (any, error) {
 			GCD:       secs(spell.DefaultCast.GCD),
 			Cooldown:  secs(spell.CD.Duration),
 			Channeled: spell.Flags.Matches(core.SpellFlagChanneled),
+			CostType:  costType(spell),
+		}
+		if mcd := f.player.GetMajorCooldown(spell.ActionID); mcd != nil {
+			info.Major = true
+			info.Survival = mcd.Type.Matches(core.CooldownTypeSurvival)
 		}
 		if spell.Cost != nil {
 			info.Cost = spell.Cost.GetCurrentCost()
 		}
 		f.spells = append(f.spells, spell)
 		spells = append(spells, info)
+	}
+	for i, yards := range f.moves {
+		spells = append(spells, spellInfo{Index: len(f.spells) + i, Key: moveKey(yards)})
 	}
 	return map[string]any{"spells": spells, "targets": len(s.Encounter.TargetUnits), "state": f.state()}, nil
 }
@@ -177,11 +231,26 @@ func playAdvance(in advanceIn) (any, error) {
 				finished = true
 				break
 			}
+			f.drivePets()
 		}
 	}
 	logs := f.logs.String()
 	f.logs.Reset()
 	return map[string]any{"logs": logs, "state": f.state(), "finished": finished || f.finished()}, nil
+}
+
+// In interactive mode the engine waits for input from every unit, pets included. The player presses their own
+// buttons; pets act on their own as in the sim, whenever their global cooldown is ready.
+func (f *liveFight) drivePets() {
+	s := f.sim
+	if s.CurrentTime < 0 {
+		return
+	}
+	for _, pet := range f.player.Pets {
+		if pet.IsEnabled() && pet.Rotation != nil && pet.GCD.IsReady(s) && !pet.IsCasting(s) && !pet.IsChanneling(s) {
+			pet.Rotation.DoNextAction(s)
+		}
+	}
 }
 
 func (f *liveFight) finished() bool {
@@ -197,11 +266,14 @@ type castIn struct {
 }
 
 // playCast casts a spell at the current time. A spell cast during a channel ends the channel first (like clipping
-// Mind Flay in game), but only when the new spell can actually be cast.
+// Mind Flay in game), but only when the new spell can actually be cast. An index after the spells is a move.
 func playCast(in castIn) (any, error) {
 	f := live
 	if f == nil {
 		return nil, fmt.Errorf("no fight started")
+	}
+	if in.Index >= len(f.spells) && in.Index < len(f.spells)+len(f.moves) {
+		return f.move(f.moves[in.Index-len(f.spells)]), nil
 	}
 	if in.Index < 0 || in.Index >= len(f.spells) {
 		return nil, fmt.Errorf("unknown spell %d", in.Index)
@@ -227,6 +299,27 @@ func playCast(in castIn) (any, error) {
 	return map[string]any{"ok": ok, "reason": reason, "logs": logs, "state": f.state()}, nil
 }
 
+// move walks to a distance from the boss, as the rotation's "move" does: not while casting, and it ends a channel.
+func (f *liveFight) move(yards float64) map[string]any {
+	s, p := f.sim, f.player
+	reason := ""
+	switch {
+	case p.IsCasting(s):
+		reason = "casting"
+	case p.IsMoving() || p.IsRooted() || p.DistanceFromTarget == yards:
+		reason = "cannot"
+	}
+	if reason == "" {
+		if p.IsChanneling(s) {
+			p.ChanneledDot.Cancel(s)
+		}
+		p.MoveTo(yards, s)
+	}
+	logs := f.logs.String()
+	f.logs.Reset()
+	return map[string]any{"ok": reason == "", "reason": reason, "logs": logs, "state": f.state()}
+}
+
 // Why a spell cannot be cast now, checked before a channel is ended for it. Empty when nothing stands in the way.
 func (f *liveFight) blocked(spell *core.Spell) string {
 	s, p := f.sim, f.player
@@ -237,10 +330,40 @@ func (f *liveFight) blocked(spell *core.Spell) string {
 		return "gcd"
 	case !spell.IsReady(s):
 		return "cooldown"
-	case spell.Cost != nil && spell.Cost.GetCurrentCost() > p.CurrentMana() && p.HasManaBar():
-		return "mana"
+	case spell.Cost != nil && !spell.Cost.MeetsRequirement(s, spell):
+		if t := costType(spell); t != "" {
+			return t
+		}
+		return "cannot"
 	}
 	return ""
+}
+
+// primarySeal is the seal a paladin's "cast primary seal" entry casts. The sim keeps it to itself (the entry holds
+// the paladin, the paladin its seal), so it is read with reflection; nil if that ever changes.
+func primarySeal(action *core.APLAction) (spell *core.Spell) {
+	defer func() {
+		if recover() != nil {
+			spell = nil
+		}
+	}()
+	impl := reflect.ValueOf(action).Elem().FieldByName("impl").Elem()
+	seal := impl.Elem().FieldByName("paladin").Elem().FieldByName("primarySeal")
+	if seal.Kind() != reflect.Pointer || seal.IsNil() || seal.Type() != reflect.TypeOf(spell) {
+		return nil
+	}
+	return (*core.Spell)(unsafe.Pointer(seal.Pointer()))
+}
+
+// spellFor is the castable spell with this id.
+func (f *liveFight) spellFor(id *proto.ActionID) *core.Spell {
+	want := core.ProtoToActionID(id)
+	for _, spell := range f.spells {
+		if spell.ActionID.SpellID == want.SpellID && spell.ActionID.ItemID == want.ItemID {
+			return spell
+		}
+	}
+	return nil
 }
 
 // ---------- state ----------
@@ -275,8 +398,8 @@ func auras(s *core.Simulation, u *core.Unit) []auraState {
 
 func (f *liveFight) state() map[string]any {
 	s, p := f.sim, f.player
-	cooldowns := make([]float64, len(f.spells))
-	costs := make([]float64, len(f.spells))
+	cooldowns := make([]float64, len(f.spells)+len(f.moves))
+	costs := make([]float64, len(f.spells)+len(f.moves))
 	for i, spell := range f.spells {
 		cooldowns[i] = secs(spell.TimeToReady(s))
 		if spell.Cost != nil {
@@ -312,17 +435,36 @@ func (f *liveFight) state() map[string]any {
 	if hint := f.hint(); hint != "" {
 		state["hint"] = hint
 	}
+	// The other resources the character has: rage, energy and combo points (a druid has them all, by form).
+	if p.HasRageBar() {
+		state["rage"] = p.CurrentRage()
+	}
+	if p.HasEnergyBar() {
+		state["energy"] = p.CurrentEnergy()
+		state["maxEnergy"] = p.MaxEnergy()
+		state["combo"] = p.ComboPoints()
+	}
+	if len(f.moves) > 0 {
+		state["distance"] = p.DistanceFromTarget
+		state["moving"] = p.IsMoving()
+	}
 	state["damageTaken"] = s.Encounter.DamageTaken
 	state["health"] = s.Encounter.EndFightAtHealth
 	return state
 }
 
 // hint is the spell the rotation would cast next, as soon as the player is free: the global cooldown, a cast and a
-// channel are taken as over for the question, then put back. Empty without a rotation or before the pull.
+// channel are taken as over for the question, then put back. What it would do right now during the global cooldown
+// (a move, an attack on the next swing) comes first. Empty without a rotation or before the pull.
 func (f *liveFight) hint() string {
 	s, p := f.sim, f.player
 	if p.Rotation == nil || s.CurrentTime < 0 {
 		return ""
+	}
+	if !p.GCD.IsReady(s) && !p.IsCasting(s) && !p.IsChanneling(s) {
+		if now := f.nextAction(); now != "" {
+			return now
+		}
 	}
 	gcd, hardcast, channel := *p.GCD, p.Hardcast.Expires, p.ChanneledDot
 	*p.GCD = core.Timer(0)
@@ -331,9 +473,45 @@ func (f *liveFight) hint() string {
 	}
 	p.ChanneledDot = nil
 	defer func() { *p.GCD, p.Hardcast.Expires, p.ChanneledDot = gcd, hardcast, channel }()
+	return f.nextAction()
+}
 
-	for _, action := range p.Rotation.PriorityList() {
+// nextAction is the first entry of the rotation that is ready now, as a spell key ("" when none is).
+func (f *liveFight) nextAction() string {
+	s, p := f.sim, f.player
+	configIdx := p.Rotation.PriorityConfigIndexes()
+	for i, action := range p.Rotation.PriorityList() {
 		if !action.IsReady(s) {
+			continue
+		}
+		// The parsed entry does not say which spell a "channel spell" casts, or where a "move" goes; the config does.
+		var config *proto.APLAction
+		if i < len(configIdx) && configIdx[i] < len(f.rotation.GetPriorityList()) {
+			config = f.rotation.PriorityList[configIdx[i]].GetAction()
+		}
+		if ch := config.GetChannelSpell(); ch != nil {
+			if spell := f.spellFor(ch.SpellId); spell != nil && spell.IsReady(s) {
+				return key(spell.ActionID)
+			}
+			continue
+		}
+		if yards, ok := moveRange(config); ok {
+			return moveKey(yards)
+		}
+		if config.GetCastPaladinPrimarySeal() != nil {
+			if spell := primarySeal(action); spell != nil {
+				return key(spell.ActionID)
+			}
+			continue
+		}
+		// "Autocast other cooldowns" names no spell: it is the first major cooldown that is ready.
+		if strings.HasSuffix(action.String(), "Autocast Other Cooldowns") {
+			for _, mcd := range p.GetMajorCooldowns() {
+				if mcd.IsReady(s) && mcd.Spell.Flags.Matches(core.SpellFlagAPL) && mcd.Spell.CanCast(s, p.CurrentTarget) &&
+					!mcd.Type.Matches(core.CooldownTypeSurvival) && (mcd.ShouldActivate == nil || mcd.ShouldActivate(s, p)) {
+					return key(mcd.Spell.ActionID)
+				}
+			}
 			continue
 		}
 		for _, spell := range action.GetAllSpells() {

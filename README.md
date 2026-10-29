@@ -3,7 +3,8 @@
 A rotation practice game for **World of Warcraft: Forever**. You play your rotation against one to three bosses,
 then compare your fight with what a simulation reaches on the same setup and see what you did better or worse.
 
-Version 1 is for Shadow Priest. Later versions add the other classes.
+Every class and spec the sim ranks is playable: 35 builds of all nine classes, from Fury Warrior to Feral Druid, with
+the sim's gear, talents and rotation for each.
 
 ## Playing
 
@@ -14,7 +15,9 @@ remembered in this browser. Press the space bar or "Bereit" to start a 5-second 
 
 In the fight, tap the buttons or use your keys. Tap a boss (or press Tab or F1 to F3) to aim at it. The hint, which
 you can switch on and off, lights up the spell the sim's rotation would cast next. A spell pressed shortly before the global cooldown or a cast ends
-goes off right after it, and a new spell during Mind Flay clips the channel.
+goes off right after it, and a new spell during a channel (Mind Flay, say)
+clips it. Rage, energy and combo points get their own bars, pets fight on their own, and a hunter who weaves melee
+between shots has a button for each distance.
 
 After the fight the sim plays the same fight a thousand times. The results show your DPS against the sim's, what cost
 you the most (with an estimate in DPS and a tip), key numbers such as DoT uptime and full Mind Flays, and both fights
@@ -36,8 +39,10 @@ so every spell value, talent, proc and mana tick is the sim's own.
   `playAdvance`, `playCast`).
 - `src/sim/`: the page's side of the engine, the same for every class.
 - `src/game/`: the fight screen, the analysis of a fight and the results.
-- `src/classes/`: one folder per class: `class.json` (action bar, effects shown, what the review looks at) and the
-  default rotation. Version 1 has Shadow Priest; a new class is a new folder.
+- `src/classes/`: one folder per class, one file per spec (`<spec>.json`: action bar, resources, effects shown, stats,
+  what the review looks at). A spec plays the rotation of the sim's profile unless it brings its own
+  (`shadow.rotation.json`). New specs are drafted from the sim's profiles with `npx vite-node scripts/draft-specs.ts`
+  (after `npm run sim`) and then edited by hand.
 
 ## Run it locally
 

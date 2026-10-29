@@ -1,11 +1,11 @@
-import type { ClassModule } from '../classes/types';
+import type { SpecModule } from '../classes/types';
 
-// Your action bar for a class: which spell sits where and on which key. Saved in this browser only.
+// Your action bar for a spec: which spell sits where and on which key. Saved in this browser only.
 
 export interface BarSlot { key: string; short: string; hotkey: string }
 
 /** The keys handed out by default, in bar order. */
-export const DEFAULT_HOTKEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'q', 'e', 'r', 't', 'f', 'g'];
+export const DEFAULT_HOTKEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'q', 'e', 'r', 't', 'f', 'g', 'z', 'x', 'c', 'v', 'b'];
 /** Keys the game itself uses; they cannot be bound to a spell. */
 const RESERVED = new Set([' ', 'tab', 'escape', 'enter', 'backspace', 'delete', 'f1', 'f2', 'f3', 'shift', 'control', 'alt', 'meta', 'capslock', 'contextmenu']);
 
@@ -18,11 +18,11 @@ export function keyLabel(key: string): string {
 }
 
 interface Saved { order: string[]; keys: Record<string, string> }
-const storageKey = (cls: ClassModule) => `bar:${cls.key}`;
+const storageKey = (spec: SpecModule) => `bar:${spec.key}`;
 
-function read(cls: ClassModule): Saved | null {
+function read(spec: SpecModule): Saved | null {
   try {
-    const raw = localStorage.getItem(storageKey(cls));
+    const raw = localStorage.getItem(storageKey(spec));
     return raw ? (JSON.parse(raw) as Saved) : null;
   } catch {
     return null;
@@ -30,9 +30,9 @@ function read(cls: ClassModule): Saved | null {
 }
 
 /** The bar for the spells the character has (available), your saved order and keys applied. */
-export function loadLayout(cls: ClassModule, available: Set<string>): BarSlot[] {
-  const own = cls.bar.filter((b) => available.has(b.key));
-  const saved = read(cls);
+export function loadLayout(spec: SpecModule, available: Set<string>): BarSlot[] {
+  const own = spec.bar.filter((b) => available.has(b.key));
+  const saved = read(spec);
   const rank = (key: string) => {
     const i = saved?.order.indexOf(key) ?? -1;
     return i < 0 ? 1000 + own.findIndex((b) => b.key === key) : i;
@@ -45,13 +45,13 @@ export function loadLayout(cls: ClassModule, available: Set<string>): BarSlot[] 
   }));
 }
 
-export function saveLayout(cls: ClassModule, slots: BarSlot[]): void {
+export function saveLayout(spec: SpecModule, slots: BarSlot[]): void {
   // Keep the places of spells this character lacks (another race's racial, say) as they were.
-  const before = read(cls);
+  const before = read(spec);
   const order = [...slots.map((s) => s.key), ...(before?.order ?? []).filter((k) => !slots.some((s) => s.key === k))];
   const keys = { ...(before?.keys ?? {}), ...Object.fromEntries(slots.map((s) => [s.key, s.hotkey])) };
   try {
-    localStorage.setItem(storageKey(cls), JSON.stringify({ order, keys }));
+    localStorage.setItem(storageKey(spec), JSON.stringify({ order, keys }));
   } catch {
     // Without storage the bar still works; it is just not remembered.
   }

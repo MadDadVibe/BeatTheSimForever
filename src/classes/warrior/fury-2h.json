@@ -1,0 +1,143 @@
+{
+  "key": "fury-2h-warrior",
+  "name": "2H Bloodthirst",
+  "tree": "Fury",
+  "defaultRace": "undead",
+  "resources": [
+    "rage"
+  ],
+  "bar": [
+    {
+      "key": "spell:23894",
+      "short": "BT"
+    },
+    {
+      "key": "spell:11574",
+      "short": "Rend"
+    },
+    {
+      "key": "spell:11585",
+      "short": "OP"
+    },
+    {
+      "key": "spell:2458",
+      "short": "Bers."
+    },
+    {
+      "key": "spell:1680",
+      "short": "WW"
+    },
+    {
+      "key": "spell:20662",
+      "short": "Exec"
+    },
+    {
+      "key": "spell:2457",
+      "short": "Battle"
+    },
+    {
+      "key": "spell:11605",
+      "short": "Slam"
+    },
+    {
+      "key": "spell:7373",
+      "short": "Ham"
+    },
+    {
+      "key": "spell:11567",
+      "short": "HS"
+    },
+    {
+      "key": "spell:1719",
+      "short": "Reck"
+    },
+    {
+      "key": "spell:2687",
+      "short": "Blood"
+    },
+    {
+      "key": "spell:12328",
+      "short": "DW"
+    },
+    {
+      "key": "spell:1259813",
+      "short": "Eureka"
+    },
+    {
+      "key": "spell:1259799",
+      "short": "EL"
+    },
+    {
+      "key": "spell:20572",
+      "short": "BFury"
+    },
+    {
+      "key": "spell:20554",
+      "short": "Zerk"
+    },
+    {
+      "key": "item:12662",
+      "short": "Rune"
+    },
+    {
+      "key": "item:13442",
+      "short": "Pot"
+    },
+    {
+      "key": "item:10646",
+      "short": "Sapper"
+    },
+    {
+      "key": "item:15993",
+      "short": "Nade"
+    }
+  ],
+  "targetAuras": [
+    "spell:11574"
+  ],
+  "playerAuras": [
+    "spell:2457",
+    "spell:1282733",
+    "spell:23894",
+    "spell:11585",
+    "spell:2458",
+    "spell:1680",
+    "spell:20662",
+    "spell:11605",
+    "spell:7373",
+    "spell:11567",
+    "spell:1719",
+    "spell:2687",
+    "spell:12328",
+    "spell:1259813",
+    "spell:1259799",
+    "spell:20572",
+    "spell:20554",
+    "item:12662",
+    "item:13442",
+    "item:10646",
+    "item:15993"
+  ],
+  "stats": [
+    "Strength",
+    "Agility",
+    "Stamina",
+    "AttackPower",
+    "MeleeHit",
+    "MeleeCrit",
+    "MeleeHaste",
+    "Expertise",
+    "ArmorPenetration",
+    "Health"
+  ],
+  "review": {
+    "dots": [
+      "spell:11574"
+    ],
+    "keepOnCooldown": [
+      "spell:23894",
+      "spell:1680",
+      "spell:11605"
+    ]
+  }
+}

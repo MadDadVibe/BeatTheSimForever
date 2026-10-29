@@ -1,0 +1,91 @@
+{
+  "key": "protection-paladin",
+  "name": "Protection Paladin",
+  "tree": "Protection",
+  "defaultRace": "undead",
+  "resources": [
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "spell:20271",
+      "short": "Judge"
+    },
+    {
+      "key": "spell:53671",
+      "short": "SJ"
+    },
+    {
+      "key": "spell:1311015",
+      "short": "Bulw."
+    },
+    {
+      "key": "spell:20928",
+      "short": "HS"
+    },
+    {
+      "key": "spell:20293",
+      "short": "SoR"
+    },
+    {
+      "key": "spell:20924",
+      "short": "Cons"
+    },
+    {
+      "key": "spell:24239",
+      "short": "HoW"
+    },
+    {
+      "key": "spell:10333",
+      "short": "HStr"
+    },
+    {
+      "key": "item:13444",
+      "short": "Pot"
+    },
+    {
+      "key": "item:18641",
+      "short": "DD"
+    }
+  ],
+  "targetAuras": [],
+  "playerAuras": [
+    "spell:20928",
+    "spell:20271",
+    "spell:53671",
+    "spell:1311015",
+    "spell:20293",
+    "spell:20924",
+    "spell:24239",
+    "spell:10333",
+    "item:13444",
+    "item:18641"
+  ],
+  "stats": [
+    "Strength",
+    "Agility",
+    "AttackPower",
+    "MeleeHit",
+    "MeleeCrit",
+    "MeleeHaste",
+    "Expertise",
+    "ArmorPenetration",
+    "Stamina",
+    "Health",
+    "Armor",
+    "Defense",
+    "Dodge",
+    "Parry",
+    "Block",
+    "BlockValue",
+    "SpellPower",
+    "Mana"
+  ],
+  "review": {
+    "dots": [],
+    "keepOnCooldown": [
+      "spell:20924",
+      "spell:10333"
+    ]
+  }
+}

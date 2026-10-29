@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { shadowPriest } from '../src/classes/shadow-priest';
+import { SPECS } from '../src/classes';
 import { bindable, bindKey, loadLayout, saveLayout, swapSlots } from '../src/game/layout';
+
+const shadowPriest = SPECS.find((s) => s.key === 'shadow-priest')!;
 
 const store = new Map<string, string>();
 beforeEach(() => {

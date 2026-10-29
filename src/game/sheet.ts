@@ -1,4 +1,4 @@
-import type { ClassModule } from '../classes/types';
+import type { SpecModule } from '../classes/types';
 import { computeStats, loadTalentTrees, type TalentTree } from '../sim/client';
 import type { SimProfile } from '../sim/types';
 import { enchantName, escapeHtml, iconUrl, label, namedIconUrl } from './names';
@@ -39,10 +39,10 @@ export function readTalents(code: string, trees: TalentTree[]) {
   });
 }
 
-export function sheetSkeleton(cls: ClassModule, profile: SimProfile): string {
+export function sheetSkeleton(spec: SpecModule, profile: SimProfile): string {
   const race = String(profile.player.race ?? '').replace(/^Race/, '').replace(/([a-z])([A-Z])/g, '$1 $2');
   return `
-    <h2 class="sheet-title">${escapeHtml(cls.name)} · ${escapeHtml(race)}</h2>
+    <h2 class="sheet-title">${escapeHtml(spec.name)} ${escapeHtml(spec.className)} · ${escapeHtml(race)}</h2>
     <details class="sheet-part" open><summary>Talente <span data-sheet="spec"></span></summary><div data-sheet="talents">…</div></details>
     <details class="sheet-part"><summary>Werte <small>mit Gear, Buffs und Verbrauchsgütern</small></summary><div data-sheet="stats">…</div></details>
     <details class="sheet-part"><summary>Gear</summary>${gearHtml(profile)}</details>
@@ -50,18 +50,18 @@ export function sheetSkeleton(cls: ClassModule, profile: SimProfile): string {
 }
 
 /** Fills in what needs loading (talent trees, stats from the engine). */
-export async function fillSheet(root: HTMLElement, cls: ClassModule, profile: SimProfile) {
+export async function fillSheet(root: HTMLElement, spec: SpecModule, profile: SimProfile) {
   const part = (name: string) => root.querySelector<HTMLElement>(`[data-sheet="${name}"]`);
   const code = String(profile.player.talentsString ?? '');
   try {
     const trees = readTalents(code, await loadTalentTrees(simClassOf(profile)));
-    const spec = part('spec');
-    if (spec) spec.textContent = trees.map((t) => t.points).join(' / ');
+    const points = part('spec');
+    if (points) points.textContent = trees.map((t) => t.points).join(' / ');
     const talents = part('talents');
     if (talents) {
       talents.innerHTML = trees
         .filter((t) => t.points > 0)
-        .map((t) => `<div class="tree${t.name.startsWith(cls.spec) ? ' main' : ''}"><h3>${escapeHtml(t.name)} <small>${t.points}</small></h3>
+        .map((t) => `<div class="tree${t.name.startsWith(spec.tree) ? ' main' : ''}"><h3>${escapeHtml(t.name)} <small>${t.points}</small></h3>
           <div class="talent-grid">${t.taken.map((x) => {
             const url = namedIconUrl(x.icon);
             return `<span class="talent" title="${escapeHtml(x.name)} ${x.points}/${x.maxPoints}">${url ? `<img src="${url}" alt="" onerror="this.remove()">` : ''}<b>${x.points}/${x.maxPoints}</b><em>${escapeHtml(x.name)}</em></span>`;
@@ -76,7 +76,7 @@ export async function fillSheet(root: HTMLElement, cls: ClassModule, profile: Si
     const stats = await computeStats(profile);
     const el = part('stats');
     if (el) {
-      el.innerHTML = `<table class="stats">${cls.stats
+      el.innerHTML = `<table class="stats">${spec.stats
         .map((name) => {
           const v = stats[STATS.indexOf(name)] ?? 0;
           const shown = PERCENT.has(name) ? `${v.toFixed(2)} %` : Math.round(v).toLocaleString('de-DE');

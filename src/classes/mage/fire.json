@@ -1,0 +1,127 @@
+{
+  "key": "fire-mage",
+  "name": "Fire",
+  "tree": "Fire",
+  "defaultRace": "undead",
+  "resources": [
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "spell:10199",
+      "short": "FBlast"
+    },
+    {
+      "key": "spell:18809",
+      "short": "Pyro"
+    },
+    {
+      "key": "spell:10151",
+      "short": "FB"
+    },
+    {
+      "key": "spell:30451",
+      "short": "AB"
+    },
+    {
+      "key": "spell:10212",
+      "short": "AM"
+    },
+    {
+      "key": "spell:10207",
+      "short": "Scorch"
+    },
+    {
+      "key": "spell:12051",
+      "short": "Evo"
+    },
+    {
+      "key": "spell:1259817",
+      "short": "Eureka"
+    },
+    {
+      "key": "spell:11129",
+      "short": "Comb"
+    },
+    {
+      "key": "spell:20572",
+      "short": "BFury"
+    },
+    {
+      "key": "spell:20554",
+      "short": "Zerk"
+    },
+    {
+      "key": "item:8008",
+      "short": "Ruby"
+    },
+    {
+      "key": "item:13444",
+      "short": "Pot"
+    },
+    {
+      "key": "item:12662",
+      "short": "Rune"
+    },
+    {
+      "key": "item:5514",
+      "short": "Agate"
+    },
+    {
+      "key": "item:5513",
+      "short": "Jade"
+    },
+    {
+      "key": "item:8007",
+      "short": "Citrin"
+    },
+    {
+      "key": "item:15993",
+      "short": "Nade"
+    }
+  ],
+  "targetAuras": [],
+  "playerAuras": [
+    "spell:44445",
+    "spell:12536",
+    "spell:30451",
+    "spell:44404",
+    "spell:10199",
+    "spell:18809",
+    "spell:10151",
+    "spell:10212",
+    "spell:10207",
+    "spell:12051",
+    "spell:1259817",
+    "spell:11129",
+    "spell:20572",
+    "spell:20554",
+    "item:8008",
+    "item:13444",
+    "item:12662",
+    "item:5514",
+    "item:5513",
+    "item:8007",
+    "item:15993"
+  ],
+  "stats": [
+    "Intellect",
+    "Spirit",
+    "Stamina",
+    "SpellPower",
+    "FirePower",
+    "ArcanePower",
+    "SpellHit",
+    "SpellCrit",
+    "SpellHaste",
+    "MP5",
+    "Mana",
+    "Health"
+  ],
+  "review": {
+    "dots": [],
+    "keepOnCooldown": [
+      "spell:10199"
+    ]
+  }
+}

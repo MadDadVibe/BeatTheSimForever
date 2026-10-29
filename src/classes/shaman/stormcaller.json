@@ -1,0 +1,97 @@
+{
+  "key": "stormcaller-shaman",
+  "name": "Stormcaller",
+  "tree": "Elemental Combat",
+  "defaultRace": "orc",
+  "resources": [
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "spell:10438",
+      "short": "Sear"
+    },
+    {
+      "key": "spell:10587",
+      "short": "Magma"
+    },
+    {
+      "key": "spell:29228",
+      "short": "FS"
+    },
+    {
+      "key": "spell:10414",
+      "short": "ES"
+    },
+    {
+      "key": "spell:1326047",
+      "short": "LvB"
+    },
+    {
+      "key": "spell:15208",
+      "short": "LB10"
+    },
+    {
+      "key": "spell:10391",
+      "short": "LB7"
+    },
+    {
+      "key": "spell:529",
+      "short": "LB2"
+    },
+    {
+      "key": "spell:20572",
+      "short": "BFury"
+    },
+    {
+      "key": "spell:20554",
+      "short": "Zerk"
+    },
+    {
+      "key": "item:13444",
+      "short": "Pot"
+    },
+    {
+      "key": "item:12662",
+      "short": "Rune"
+    }
+  ],
+  "targetAuras": [
+    "spell:10438",
+    "spell:10587",
+    "spell:29228"
+  ],
+  "playerAuras": [
+    "spell:16246",
+    "spell:10414",
+    "spell:1326047",
+    "spell:15208",
+    "spell:10391",
+    "spell:529",
+    "spell:20572",
+    "spell:20554",
+    "item:13444",
+    "item:12662"
+  ],
+  "stats": [
+    "Intellect",
+    "Spirit",
+    "Stamina",
+    "SpellPower",
+    "SpellHit",
+    "SpellCrit",
+    "SpellHaste",
+    "MP5",
+    "Mana",
+    "Health"
+  ],
+  "review": {
+    "dots": [
+      "spell:29228"
+    ],
+    "keepOnCooldown": [
+      "spell:10414",
+      "spell:1326047"
+    ]
+  }
+}

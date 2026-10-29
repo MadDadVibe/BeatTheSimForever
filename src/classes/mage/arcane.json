@@ -1,0 +1,121 @@
+{
+  "key": "arcane-mage",
+  "name": "Arcane",
+  "tree": "Arcane",
+  "defaultRace": "gnome",
+  "resources": [
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "spell:1326082",
+      "short": "AW4"
+    },
+    {
+      "key": "spell:10212",
+      "short": "AM"
+    },
+    {
+      "key": "spell:30451",
+      "short": "AB"
+    },
+    {
+      "key": "spell:1326079",
+      "short": "AW1"
+    },
+    {
+      "key": "spell:10181",
+      "short": "FrB"
+    },
+    {
+      "key": "spell:12051",
+      "short": "Evo"
+    },
+    {
+      "key": "spell:1259817",
+      "short": "Eureka"
+    },
+    {
+      "key": "spell:12043",
+      "short": "PoM"
+    },
+    {
+      "key": "spell:12042",
+      "short": "AP"
+    },
+    {
+      "key": "spell:20572",
+      "short": "BFury"
+    },
+    {
+      "key": "spell:20554",
+      "short": "Zerk"
+    },
+    {
+      "key": "item:13444",
+      "short": "Pot"
+    },
+    {
+      "key": "item:12662",
+      "short": "Rune"
+    },
+    {
+      "key": "item:5514",
+      "short": "Agate"
+    },
+    {
+      "key": "item:5513",
+      "short": "Jade"
+    },
+    {
+      "key": "item:8007",
+      "short": "Citrin"
+    },
+    {
+      "key": "item:8008",
+      "short": "Ruby"
+    }
+  ],
+  "targetAuras": [],
+  "playerAuras": [
+    "spell:12043",
+    "spell:44404",
+    "spell:12536",
+    "spell:30451",
+    "spell:1326082",
+    "spell:10212",
+    "spell:1326079",
+    "spell:10181",
+    "spell:12051",
+    "spell:1259817",
+    "spell:12042",
+    "spell:20572",
+    "spell:20554",
+    "item:13444",
+    "item:12662",
+    "item:5514",
+    "item:5513",
+    "item:8007",
+    "item:8008"
+  ],
+  "stats": [
+    "Intellect",
+    "Spirit",
+    "Stamina",
+    "SpellPower",
+    "ArcanePower",
+    "FrostPower",
+    "SpellHit",
+    "SpellCrit",
+    "SpellHaste",
+    "MP5",
+    "Mana",
+    "Health"
+  ],
+  "review": {
+    "dots": [],
+    "keepOnCooldown": [
+      "spell:1326082"
+    ]
+  }
+}

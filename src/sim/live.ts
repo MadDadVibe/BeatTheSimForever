@@ -1,6 +1,6 @@
 // The live fight the player drives: the same engine as the sim, run step by step. Class-neutral.
 
-/** A castable spell (or item) of the character, as the engine lists it. */
+/** A castable spell (or item) of the character, as the engine lists it; "move:<yards>" walks to that distance. */
 export interface LiveSpell {
   index: number;
   key: string;
@@ -10,7 +10,15 @@ export interface LiveSpell {
   cooldown: number;
   channeled: boolean;
   cost: number;
+  /** The resource it costs; empty when it is free. */
+  costType: Resource | '';
+  /** A major cooldown (trinket, racial, class cooldown): the sim's rotation uses these whenever they are ready. */
+  major: boolean;
+  /** A major cooldown for staying alive; the sim's rotation leaves these alone. */
+  survival: boolean;
 }
+
+export type Resource = 'mana' | 'rage' | 'energy' | 'focus';
 
 export interface LiveAura { key: string; label: string; remaining: number; duration: number; stacks: number }
 
@@ -19,6 +27,12 @@ export interface LiveState {
   duration: number;
   mana: number;
   maxMana: number;
+  /** Only for characters with a rage bar (warriors, druids). */
+  rage?: number;
+  /** Only for characters with an energy bar (rogues, druids), with their combo points. */
+  energy?: number;
+  maxEnergy?: number;
+  combo?: number;
   gcd: number;
   cooldowns: number[];
   costs: number[];
@@ -29,11 +43,14 @@ export interface LiveState {
   damageTaken: number;
   /** The spell the sim's rotation would cast next (when the fight was started with one). */
   hint?: string;
+  /** Only when the rotation moves (a hunter weaving melee between shots): your distance to the boss, in yards. */
+  distance?: number;
+  moving?: boolean;
   /** All bosses' health together in a health fight; 0 in a timed fight. */
   health: number;
 }
 
-export type CastBlock = 'casting' | 'gcd' | 'cooldown' | 'mana' | 'cannot';
+export type CastBlock = 'casting' | 'gcd' | 'cooldown' | Resource | 'cannot';
 
 export interface LiveStart { spells: LiveSpell[]; targets: number; state: LiveState }
 export interface LiveStep { logs: string; state: LiveState; finished: boolean }

@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { shadowPriest } from '../src/classes/shadow-priest';
+import { SPECS } from '../src/classes';
 import { runJob } from '../src/sim/run';
 import type { SimJob } from '../src/sim/types';
 import { loadSim, profiles, simBuilt } from './sim-node';
+
+const shadowPriest = SPECS.find((s) => s.key === 'shadow-priest')!;
 
 const MIND_FLAY = 'spell:18807';
 const SWP = 'spell:10894';

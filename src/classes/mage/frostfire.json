@@ -1,0 +1,120 @@
+{
+  "key": "frostfire-mage",
+  "name": "Frostfire",
+  "tree": "Fire",
+  "defaultRace": "human",
+  "resources": [
+    "mana"
+  ],
+  "bar": [
+    {
+      "key": "spell:18809",
+      "short": "Pyro"
+    },
+    {
+      "key": "spell:30455",
+      "short": "IL"
+    },
+    {
+      "key": "spell:2948",
+      "short": "Scorch"
+    },
+    {
+      "key": "spell:2136",
+      "short": "FBlast"
+    },
+    {
+      "key": "spell:1237313",
+      "short": "FFB"
+    },
+    {
+      "key": "spell:12051",
+      "short": "Evo"
+    },
+    {
+      "key": "spell:1259817",
+      "short": "Eureka"
+    },
+    {
+      "key": "spell:20572",
+      "short": "BFury"
+    },
+    {
+      "key": "spell:20554",
+      "short": "Zerk"
+    },
+    {
+      "key": "item:8008",
+      "short": "Ruby"
+    },
+    {
+      "key": "item:13444",
+      "short": "Pot"
+    },
+    {
+      "key": "item:12662",
+      "short": "Rune"
+    },
+    {
+      "key": "item:5514",
+      "short": "Agate"
+    },
+    {
+      "key": "item:5513",
+      "short": "Jade"
+    },
+    {
+      "key": "item:8007",
+      "short": "Citrin"
+    },
+    {
+      "key": "item:15993",
+      "short": "Nade"
+    }
+  ],
+  "targetAuras": [
+    "spell:18809"
+  ],
+  "playerAuras": [
+    "spell:44445",
+    "spell:12873",
+    "spell:44543",
+    "spell:30455",
+    "spell:2948",
+    "spell:2136",
+    "spell:1237313",
+    "spell:12051",
+    "spell:1259817",
+    "spell:20572",
+    "spell:20554",
+    "item:8008",
+    "item:13444",
+    "item:12662",
+    "item:5514",
+    "item:5513",
+    "item:8007",
+    "item:15993"
+  ],
+  "stats": [
+    "Intellect",
+    "Spirit",
+    "Stamina",
+    "SpellPower",
+    "FrostPower",
+    "FirePower",
+    "SpellHit",
+    "SpellCrit",
+    "SpellHaste",
+    "MP5",
+    "Mana",
+    "Health"
+  ],
+  "review": {
+    "dots": [
+      "spell:18809"
+    ],
+    "keepOnCooldown": [
+      "spell:2136"
+    ]
+  }
+}

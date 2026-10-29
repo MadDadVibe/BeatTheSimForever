@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { normalizeApl, rotationFromExport } from '../src/sim/apl';
-import rotationFile from '../src/classes/shadow-priest/rotation.json';
+import rotationFile from '../src/classes/priest/shadow.rotation.json';
 
 describe('normalizeApl', () => {
   it('replaces variables by their value and drops hidden entries', () => {
