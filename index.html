@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Beat the Sim: Forever</title>
+  </head>
+  <body>
+    <main id="app">
+      <h1>Beat the Sim: Forever</h1>
+      <p class="lead">Vorschau der Sim-Brücke: Der WoW-Forever-Sim läuft hier im Browser. Das Spiel selbst kommt im nächsten Schritt.</p>
+
+      <form id="setup">
+        <label>Klasse <select name="class"></select></label>
+        <label>Rasse <select name="race"></select></label>
+        <label>Bosse
+          <select name="targets"><option>1</option><option>2</option><option>3</option></select>
+        </label>
+        <label>Fight
+          <select name="fight">
+            <option value="time">Zeit</option>
+            <option value="health">Bis die Bosse tot sind</option>
+          </select>
+        </label>
+        <label data-for="time">Sekunden <input name="seconds" type="number" min="10" max="900" value="180" /></label>
+        <label data-for="health" hidden>Leben pro Boss <input name="health" type="number" min="10000" step="10000" value="150000" /></label>
+        <label>Iterationen <input name="iterations" type="number" min="1" max="5000" value="500" /></label>
+        <label class="wide">Eigene Rota (APL-JSON, optional) <input name="rotation" type="file" accept=".json,application/json" /></label>
+        <button type="submit">Sim starten</button>
+      </form>
+
+      <p id="status" role="status"></p>
+      <section id="result" hidden>
+        <div class="dps"><span id="dps"></span><small id="dps-detail"></small></div>
+        <h2>Spells pro Fight</h2>
+        <table id="spells"><thead><tr><th>Spell</th><th>Casts</th><th>Schaden</th><th>Anteil</th></tr></thead><tbody></tbody></table>
+        <h2>Erster Fight, die ersten 40 Casts</h2>
+        <ol id="timeline"></ol>
+      </section>
+      <footer>
+        Rechnet mit dem <a href="https://github.com/gunba/wow-forever-sim">WoW Forever sim</a> (MIT-Lizenz,
+        <a href="sim/LICENSE-wow-forever-sim.txt">Lizenztext</a>). Inoffizielles Fan-Projekt, nicht mit Blizzard Entertainment verbunden.
+      </footer>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

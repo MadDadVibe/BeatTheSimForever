@@ -1,0 +1,45 @@
+{
+  "apiVersion": 2,
+  "player": {
+    "apiVersion": 2,
+    "class": "ClassPriest",
+    "cooldowns": {
+    },
+    "rotation": {
+      "type": "TypeAPL",
+      "prepullActions": [
+        {"action":{"condition":{"variableRef":{"name":"Troll"}},"castSpell":{"spellId":{"spellId":19312,"rank":6}}},"doAtValue":{"const":{"val":"-3s"}}},
+        {"action":{"castSpell":{"spellId":{"spellId":10947,"rank":9}}},"doAtValue":{"const":{"val":"-1.5s"}}}
+      ],
+      "priorityList": [
+        {"action":{"condition":{"not":{"val":{"auraIsActive":{"auraId":{"spellId":15473}}}}},"castSpell":{"spellId":{"spellId":15473}}}},
+        {"action":{"condition":{"variableRef":{"name":"Dark Sac"}},"castSpell":{"spellId":{"spellId":1277328}}}},
+        {"action":{"condition":{"variableRef":{"name":"Night Elf"}},"castSpell":{"spellId":{"spellId":1259799}}}},
+        {"action":{"condition":{"variableRef":{"name":"Gnome"}},"castSpell":{"spellId":{"spellId":1259823}}}},
+        {"action":{"autocastOtherCooldowns":{}}},
+        {"action":{"condition":{"variableRef":{"name":"SWP Refresh"}},"castSpell":{"spellId":{"spellId":10894}}}},
+        {"action":{"condition":{"not":{"val":{"dotIsActive":{"spellId":{"spellId":19280}}}}},"castSpell":{"spellId":{"spellId":19280}}}},
+        {"action":{"castSpell":{"spellId":{"spellId":10947}}}},
+        {"action":{"castSpell":{"spellId":{"spellId":1309636}}}},
+        {"hide":true,"action":{"castSpell":{"spellId":{"spellId":15286}}}},
+        {"hide":true,"action":{"condition":{"and":{"vals":[{"cmp":{"op":"OpGt","lhs":{"spellExpectedDpet":{"spellId":{"spellId":19305,"rank":7}}},"rhs":{"spellExpectedDpet":{"spellId":{"spellId":18807,"rank":6}}}}},{"cmp":{"op":"OpGe","lhs":{"spellTimeToReady":{"spellId":{"spellId":10947,"rank":9}}},"rhs":{"const":{"val":"4s"}}}}]}},"castSpell":{"spellId":{"spellId":19305}}}},
+        {"hide":true,"action":{"strictSequence":{"actions":[{"castSpell":{"spellId":{"spellId":14751}}},{"castSpell":{"spellId":{"spellId":19305,"rank":7}}}]}}},
+        {"action":{"strictSequence":{"actions":[{"castSpell":{"spellId":{"spellId":14751}}},{"castSpell":{"spellId":{"spellId":18807,"rank":6}}}]}}},
+        {"action":{"channelSpell":{"spellId":{"spellId":18807},"interruptIf":{"or":{"vals":[{"variableRef":{"name":"MF3"}}]}}}}}
+      ],
+      "groups": [
+        {"name":"Cooldowns","actions":[{"action":{}},{"action":{}},{"action":{}},{"action":{}}]}
+      ],
+      "valueVariables": [
+        {"name":"Dark Sac","value":{"cmp":{"op":"OpLe","lhs":{"currentMana":{}},"rhs":{"const":{"val":"2000"}}}}},
+        {"name":"Inner Focus Rules","value":{"and":{"vals":[{"not":{"val":{"spellIsReady":{"spellId":{"spellId":10947}}}}},{"cmp":{"op":"OpGe","lhs":{"currentTime":{}},"rhs":{"const":{"val":"4.5s"}}}}]}}},
+        {"name":"SWP Refresh","value":{"not":{"val":{"dotIsActive":{"spellId":{"spellId":10894}}}}}},
+        {"name":"Troll","value":{"spellIsKnown":{"spellId":{"spellId":19312,"rank":6}}}},
+        {"name":"Night Elf","value":{"or":{"vals":[{"cmp":{"op":"OpEq","lhs":{"currentTime":{}},"rhs":{"const":{"val":"3s"}}}},{"cmp":{"op":"OpGe","lhs":{"currentTime":{}},"rhs":{"const":{"val":"180s"}}}},{"spellIsKnown":{"spellId":{"spellId":1259799}}}]}}},
+        {"name":"Gnome","value":{"or":{"vals":[{"cmp":{"op":"OpEq","lhs":{"currentTime":{}},"rhs":{"const":{"val":"3s"}}}},{"cmp":{"op":"OpGe","lhs":{"currentTime":{}},"rhs":{"const":{"val":"120s"}}}},{"spellIsKnown":{"spellId":{"spellId":1259823}}}]}}},
+        {"name":"MF3","value":{"cmp":{"op":"OpEq","lhs":{"spellChanneledTicks":{"spellId":{"spellId":18807,"rank":6}}},"rhs":{"const":{"val":"3"}}}}},
+        {"name":"MF2","value":{"cmp":{"op":"OpEq","lhs":{"spellChanneledTicks":{"spellId":{"spellId":18807,"rank":6}}},"rhs":{"const":{"val":"2"}}}}}
+      ]
+    }
+  }
+}

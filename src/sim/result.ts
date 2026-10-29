@@ -1,0 +1,69 @@
+import type { ActionId, SimSummary, SpellStats, TimelineEvent } from './types';
+
+export function actionKey(id: ActionId): string {
+  if (id.spellId) return `spell:${id.spellId}`;
+  if (id.itemId) return `item:${id.itemId}`;
+  return `other:${id.otherId ?? 'unknown'}${id.tag ? ':' + id.tag : ''}`;
+}
+
+// "{SpellID: 10894}", "{ItemID: 12662}", "{OtherID: 2, Tag: 1}" in the combat log.
+function logKey(text: string): string {
+  const m = text.match(/\{(SpellID|ItemID|OtherID): (\d+)(?:, Tag: (\d+))?\}/);
+  if (!m) return 'other:unknown';
+  if (m[1] === 'SpellID') return `spell:${m[2]}`;
+  if (m[1] === 'ItemID') return `item:${m[2]}`;
+  return `other:${m[2]}${m[3] && m[3] !== '0' ? ':' + m[3] : ''}`;
+}
+
+function targetIndex(text: string): number | null {
+  const m = text.match(/\[Target (\d+)\]/);
+  return m ? Number(m[1]) - 1 : null;
+}
+
+/** Reads the player's side of the first simulated fight out of the sim's debug log. */
+export function parseTimeline(logs: string, playerName: string): TimelineEvent[] {
+  const events: TimelineEvent[] = [];
+  const me = `[${playerName} (#1)]`;
+  for (const line of logs.split('\n')) {
+    const m = line.match(/^\[(-?\d+(?:\.\d+)?)\] (.*)$/);
+    if (!m) continue;
+    const t = Number(m[1]);
+    const rest = m[2];
+    if (rest.startsWith(me)) {
+      const body = rest.slice(me.length).trim();
+      let x: RegExpMatchArray | null;
+      if ((x = body.match(/^Casting (\{[^}]*\}) \(Cost = ([\d.]+), Cast Time = ([\d.]+)(m?s)/))) {
+        events.push({ t, type: 'cast', key: logKey(x[1]), cost: Number(x[2]), castTime: Number(x[3]) / (x[4] === 'ms' ? 1000 : 1) });
+      } else if ((x = body.match(/^\[Target \d+\] (\{[^}]*\}) (tick )?(Hit|Crit)\w* for ([\d.]+) damage/))) {
+        const amount = Number(x[4]);
+        if (amount > 0) events.push({ t, type: 'damage', key: logKey(x[1]), target: targetIndex(body) ?? 0, amount, crit: x[3] === 'Crit', tick: !!x[2] });
+      } else if ((x = body.match(/^(?:Spent|Gained) [\d.]+ mana from .* --> ([\d.]+)\)/))) {
+        events.push({ t, type: 'mana', mana: Number(x[1]) });
+      }
+    } else if (/^\[Target \d+\] Aura (gained|faded):/.test(rest)) {
+      events.push({ t, type: rest.includes('gained') ? 'auraOn' : 'auraOff', key: logKey(rest), target: targetIndex(rest) });
+    }
+  }
+  return events;
+}
+
+interface RawAction { id: ActionId; targets: Array<{ casts: number; damage: number }> }
+interface RawResult {
+  errorResult?: string;
+  logs?: string;
+  raidMetrics: { parties: Array<{ players: Array<{ name: string; dps: { avg: number; stdev: number; aggregatorData?: { n: number } }; actions: RawAction[] }> }> };
+}
+
+export function parseResult(json: string, seconds: number): SimSummary {
+  const raw = JSON.parse(json) as RawResult;
+  if (raw.errorResult) throw new Error(raw.errorResult);
+  const player = raw.raidMetrics.parties[0].players[0];
+  const iterations = player.dps.aggregatorData?.n ?? 1;
+  const spells: SpellStats[] = player.actions.map((a) => {
+    const casts = a.targets.reduce((s, t) => s + t.casts, 0);
+    const damage = a.targets.reduce((s, t) => s + t.damage, 0);
+    return { id: a.id, key: actionKey(a.id), casts, damage, castsPerFight: casts / iterations, damagePerFight: damage / iterations };
+  });
+  spells.sort((a, b) => b.damage - a.damage);
+  return { dps: player.dps.avg, dpsStdev: player.dps.stdev, iterations, duration: seconds, spells, timeline: parseTimeline(raw.logs ?? '', player.name) };
+}
