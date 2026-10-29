@@ -1,6 +1,6 @@
 import type { ClassModule } from '../classes/types';
 import { live } from '../sim/client';
-import type { CastBlock, LiveSpell, LiveState } from '../sim/live';
+import type { CastBlock, LiveSpell, LiveState, Resource } from '../sim/live';
 import { parseTimeline } from '../sim/result';
 import type { AplRotation, FightSpec, SimProfile, TimelineEvent } from '../sim/types';
 import { bindable, bindKey, keyLabel, loadLayout, saveLayout, swapSlots, type BarSlot } from './layout';
@@ -43,6 +43,9 @@ const BLOCK_TEXT: Record<CastBlock, string> = {
   gcd: 'Globaler Cooldown',
   cooldown: 'Noch nicht bereit',
   mana: 'Nicht genug Mana',
+  rage: 'Nicht genug Wut',
+  energy: 'Nicht genug Energie',
+  focus: 'Nicht genug Fokus',
   cannot: 'Geht gerade nicht',
 };
 
@@ -153,7 +156,9 @@ class FightScreen {
           <div class="countdown" data-el="countdown"></div>
           <div class="auras player-auras" data-el="playerAuras"></div>
           <div class="bar cast-bar" data-el="castBar"><span data-el="castFill"></span><em data-el="castText"></em></div>
-          <div class="bar mana-bar"><span data-el="manaFill"></span><em data-el="manaText"></em></div>
+          ${cls.resources.map((r) => r === 'combo'
+            ? '<div class="combo" data-el="combo">' + '<i></i>'.repeat(5) + '</div>'
+            : `<div class="bar ${r}-bar"><span data-el="${r}Fill"></span><em data-el="${r}Text"></em></div>`).join('')}
           <div class="flash" data-el="flash" aria-live="polite"></div>
         </section>
         <nav class="action-bar" data-el="bar"></nav>
@@ -408,8 +413,15 @@ class FightScreen {
 
     // You
     this.el.playerAuras.innerHTML = auraIcons(cls.playerAuras, s.auras, since);
-    this.el.manaFill.style.width = `${(100 * s.mana) / Math.max(1, s.maxMana)}%`;
-    this.el.manaText.textContent = `${Math.round(s.mana).toLocaleString('de-DE')} / ${Math.round(s.maxMana).toLocaleString('de-DE')}`;
+    for (const r of cls.resources) {
+      if (r === 'combo') {
+        this.el.combo.querySelectorAll('i').forEach((pip, i) => pip.classList.toggle('on', i < (s.combo ?? 0)));
+        continue;
+      }
+      const [now, max] = r === 'mana' ? [s.mana, s.maxMana] : r === 'energy' ? [s.energy ?? 0, s.maxEnergy ?? 100] : [s.rage ?? 0, 100];
+      this.el[r + 'Fill'].style.width = `${(100 * now) / Math.max(1, max)}%`;
+      this.el[r + 'Text'].textContent = `${Math.round(now).toLocaleString('de-DE')} / ${Math.round(max).toLocaleString('de-DE')}`;
+    }
     const bar = this.el.castBar;
     const simNow = s.time + since;
     if (s.cast) {
@@ -431,7 +443,7 @@ class FightScreen {
       this.el.castText.textContent = '';
     }
 
-    // Action bar: cooldowns, the global cooldown, mana and the hint
+    // Action bar: cooldowns, the global cooldown, resources and the hint
     const gcdLeft = Math.max(0, s.gcd - since);
     const hint = this.hintNow(t);
     for (const b of this.buttons) {
@@ -441,7 +453,7 @@ class FightScreen {
       const span = cd > gcdLeft ? Math.max(cd, b.spell.cooldown) : 1.5;
       cdEl.style.setProperty('--p', String(wait > 0 ? clamp(wait / span) : 0));
       cdEl.textContent = cd > 1.5 ? (cd >= 60 ? `${Math.ceil(cd / 60)}m` : Math.ceil(cd).toString()) : '';
-      b.el.classList.toggle('no-mana', s.costs[b.spell.index] > s.mana);
+      b.el.classList.toggle('no-mana', !!b.spell.costType && s.costs[b.spell.index] > have(s, b.spell.costType));
       b.el.classList.toggle('queued', this.queued === b);
       b.el.classList.toggle('hint', this.hints && b.key === hint);
     }
@@ -504,6 +516,11 @@ function auraIcons(show: string[], auras: LiveState['auras'], since: number, wit
       return `<span class="aura${low}" title="${escapeHtml(label(key))}">${icon ? `<img src="${icon}" alt="" onerror="this.remove()">` : ''}${a.stacks > 1 ? `<b>${a.stacks}</b>` : ''}<i>${left === '' ? '' : left < 10 ? left.toFixed(1) : Math.round(left)}</i></span>`;
     })
     .join('');
+}
+
+/** How much of a resource you have now. */
+function have(s: LiveState, r: Resource): number {
+  return r === 'mana' ? s.mana : r === 'rage' ? s.rage ?? 0 : r === 'energy' ? s.energy ?? 0 : Infinity;
 }
 
 const clamp = (x: number) => Math.max(0, Math.min(1, x));

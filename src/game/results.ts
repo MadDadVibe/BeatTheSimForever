@@ -154,7 +154,8 @@ function statsRows(you: FightFacts, sim: FightFacts, review: ReviewConfig): stri
 
 function spellRows(tbody: HTMLElement, you: FightFacts, sim: SimSummary | null) {
   const keys = new Set([...Object.keys(you.casts), ...Object.keys(you.damageBy), ...(sim?.spells.filter((s) => s.castsPerFight > 0 || s.damagePerFight > 0).map((s) => s.key) ?? [])]);
-  const list = [...keys].filter((k) => !k.startsWith('other:')).map((key) => ({
+  // Of the other actions only white hits and auto shots do damage worth listing.
+  const list = [...keys].filter((k) => !k.startsWith('other:') || /^other:[78](:|$)/.test(k)).map((key) => ({
     key,
     casts: you.casts[key] ?? 0,
     damage: you.damageBy[key] ?? 0,

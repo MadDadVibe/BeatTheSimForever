@@ -87,6 +87,27 @@ type spellInfo struct {
 	Cooldown  float64 `json:"cooldown"`
 	Channeled bool    `json:"channeled"`
 	Cost      float64 `json:"cost"`
+	// What it costs: "mana", "rage", "energy" or "focus"; empty when free.
+	CostType string `json:"costType"`
+	// A major cooldown (a trinket, a racial, a class cooldown) the sim's rotation uses whenever it is ready.
+	Major bool `json:"major"`
+}
+
+func costType(spell *core.Spell) string {
+	if spell.Cost == nil {
+		return ""
+	}
+	switch spell.Cost.CostType() {
+	case core.CostTypeMana:
+		return "mana"
+	case core.CostTypeRage:
+		return "rage"
+	case core.CostTypeEnergy:
+		return "energy"
+	case core.CostTypeFocus:
+		return "focus"
+	}
+	return ""
 }
 
 func playStart(in startIn) (any, error) {
@@ -135,6 +156,8 @@ func playStart(in startIn) (any, error) {
 			GCD:       secs(spell.DefaultCast.GCD),
 			Cooldown:  secs(spell.CD.Duration),
 			Channeled: spell.Flags.Matches(core.SpellFlagChanneled),
+			CostType:  costType(spell),
+			Major:     f.player.GetMajorCooldown(spell.ActionID) != nil,
 		}
 		if spell.Cost != nil {
 			info.Cost = spell.Cost.GetCurrentCost()
@@ -177,11 +200,26 @@ func playAdvance(in advanceIn) (any, error) {
 				finished = true
 				break
 			}
+			f.drivePets()
 		}
 	}
 	logs := f.logs.String()
 	f.logs.Reset()
 	return map[string]any{"logs": logs, "state": f.state(), "finished": finished || f.finished()}, nil
+}
+
+// In interactive mode the engine waits for input from every unit, pets included. The player presses their own
+// buttons; pets act on their own as in the sim, whenever their global cooldown is ready.
+func (f *liveFight) drivePets() {
+	s := f.sim
+	if s.CurrentTime < 0 {
+		return
+	}
+	for _, pet := range f.player.Pets {
+		if pet.IsEnabled() && pet.Rotation != nil && pet.GCD.IsReady(s) && !pet.IsCasting(s) && !pet.IsChanneling(s) {
+			pet.Rotation.DoNextAction(s)
+		}
+	}
 }
 
 func (f *liveFight) finished() bool {
@@ -237,8 +275,11 @@ func (f *liveFight) blocked(spell *core.Spell) string {
 		return "gcd"
 	case !spell.IsReady(s):
 		return "cooldown"
-	case spell.Cost != nil && spell.Cost.GetCurrentCost() > p.CurrentMana() && p.HasManaBar():
-		return "mana"
+	case spell.Cost != nil && !spell.Cost.MeetsRequirement(s, spell):
+		if t := costType(spell); t != "" {
+			return t
+		}
+		return "cannot"
 	}
 	return ""
 }
@@ -311,6 +352,15 @@ func (f *liveFight) state() map[string]any {
 	state["targets"] = targets
 	if hint := f.hint(); hint != "" {
 		state["hint"] = hint
+	}
+	// The other resources the character has: rage, energy and combo points (a druid has them all, by form).
+	if p.HasRageBar() {
+		state["rage"] = p.CurrentRage()
+	}
+	if p.HasEnergyBar() {
+		state["energy"] = p.CurrentEnergy()
+		state["maxEnergy"] = p.MaxEnergy()
+		state["combo"] = p.ComboPoints()
 	}
 	state["damageTaken"] = s.Encounter.DamageTaken
 	state["health"] = s.Encounter.EndFightAtHealth

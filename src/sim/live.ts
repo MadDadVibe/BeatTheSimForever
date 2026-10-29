@@ -10,7 +10,13 @@ export interface LiveSpell {
   cooldown: number;
   channeled: boolean;
   cost: number;
+  /** The resource it costs; empty when it is free. */
+  costType: Resource | '';
+  /** A major cooldown (trinket, racial, class cooldown): the sim's rotation uses these whenever they are ready. */
+  major: boolean;
 }
+
+export type Resource = 'mana' | 'rage' | 'energy' | 'focus';
 
 export interface LiveAura { key: string; label: string; remaining: number; duration: number; stacks: number }
 
@@ -19,6 +25,12 @@ export interface LiveState {
   duration: number;
   mana: number;
   maxMana: number;
+  /** Only for characters with a rage bar (warriors, druids). */
+  rage?: number;
+  /** Only for characters with an energy bar (rogues, druids), with their combo points. */
+  energy?: number;
+  maxEnergy?: number;
+  combo?: number;
   gcd: number;
   cooldowns: number[];
   costs: number[];
@@ -33,7 +45,7 @@ export interface LiveState {
   health: number;
 }
 
-export type CastBlock = 'casting' | 'gcd' | 'cooldown' | 'mana' | 'cannot';
+export type CastBlock = 'casting' | 'gcd' | 'cooldown' | Resource | 'cannot';
 
 export interface LiveStart { spells: LiveSpell[]; targets: number; state: LiveState }
 export interface LiveStep { logs: string; state: LiveState; finished: boolean }
