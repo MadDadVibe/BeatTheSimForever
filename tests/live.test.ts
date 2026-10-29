@@ -153,3 +153,30 @@ describe.skipIf(!simBuilt)('hint', () => {
     expect(parseTimeline(later.logs, 'Shadow').filter((e) => e.type === 'cast')).toEqual([]);
   });
 });
+
+describe.skipIf(!simBuilt)('start buffs and set bonuses', () => {
+  const DP_KEY = 'spell:19280';
+  it('has Shadowform up from the start, and the full GCD free', async () => {
+    await loadSim();
+    const api = liveApi(globalThis as unknown as LiveEngine);
+    const { shadowPriest } = await import('../src/classes/shadow-priest');
+    const profile = profiles('shadow-priest').undead;
+    const { state } = api.start(buildLiveRequest(profile, 1, { kind: 'time', seconds: 30 }, shadowPriest.defaultRotation, shadowPriest.startBuffs), 1, 5);
+    expect(state.time).toBe(-5);
+    expect(state.auras.some((a) => a.key === SHADOWFORM)).toBe(true);
+    expect(state.gcd).toBe(0);
+  });
+
+  it('gives Devouring Plague its 24 s cooldown without the Tier 1 set bonus', async () => {
+    await loadSim();
+    const api = liveApi(globalThis as unknown as LiveEngine);
+    const base = profiles('shadow-priest').undead;
+    for (const [tier1, cd] of [[false, 24], [true, 0]] as const) {
+      const profile = { ...base, player: { ...base.player, foreverTier1Bonuses: tier1 } };
+      const { spells } = api.start(buildLiveRequest(profile, 1, { kind: 'time', seconds: 30 }), 1, 0);
+      const dp = spells.find((s) => s.key === DP_KEY)!;
+      api.advance(0.1);
+      expect(api.cast(dp.index, 0).state.cooldowns[dp.index]).toBeCloseTo(cd, 1);
+    }
+  });
+});

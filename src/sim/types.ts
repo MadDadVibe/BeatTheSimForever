@@ -24,6 +24,8 @@ export interface SimJob {
   profile: SimProfile;
   /** Replaces the profile's own rotation when given. */
   rotation?: AplRotation;
+  /** Lasting buffs (e.g. Shadowform) that are up before the fight starts, cast well before the pull. */
+  startBuffs?: string[];
   /** How many bosses stand in front of you (1 to 3). */
   targets: number;
   fight: FightSpec;

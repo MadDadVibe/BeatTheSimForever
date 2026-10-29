@@ -49,3 +49,14 @@ describe.skipIf(!simBuilt)('sim bridge (Shadow Priest)', () => {
     expect(s.dps).toBeGreaterThan(500);
   });
 });
+
+describe.skipIf(!simBuilt)('sim with start buffs', () => {
+  it('casts Shadowform before the pull instead of in the fight', async () => {
+    const s = runJob(await loadSim(), {
+      profile: profiles('shadow-priest').undead, rotation: shadowPriest.defaultRotation, startBuffs: shadowPriest.startBuffs,
+      targets: 1, fight: { kind: 'time', seconds: 60 }, iterations: 10, seed: 2,
+    });
+    const forms = s.timeline.filter((e) => e.type === 'cast' && e.key === 'spell:15473');
+    expect(forms.map((e) => e.t)).toEqual([-20]);
+  });
+});

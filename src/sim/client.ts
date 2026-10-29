@@ -41,8 +41,8 @@ export const computeStats = (profile: SimProfile) =>
   send<number[]>('stats', { request: buildLiveRequest(profile, 1, { kind: 'time', seconds: 60 }) } satisfies Payload<'stats'>);
 
 export const live = {
-  start: (profile: SimProfile, targets: number, fight: FightSpec, countdown: number, rotation?: AplRotation, seed = 0) =>
-    send<LiveStart>('liveStart', { request: buildLiveRequest(profile, targets, fight, rotation), seed, countdown } satisfies Payload<'liveStart'>),
+  start: (profile: SimProfile, targets: number, fight: FightSpec, countdown: number, rotation?: AplRotation, startBuffs?: string[], seed = 0) =>
+    send<LiveStart>('liveStart', { request: buildLiveRequest(profile, targets, fight, rotation, startBuffs), seed, countdown } satisfies Payload<'liveStart'>),
   advance: (to: number, target = 0) => send<LiveStep>('liveAdvance', { to, target } satisfies Payload<'liveAdvance'>),
   cast: (index: number, target: number) => send<LiveCast>('liveCast', { index, target } satisfies Payload<'liveCast'>),
 };

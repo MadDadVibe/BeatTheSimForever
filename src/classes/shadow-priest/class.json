@@ -3,6 +3,9 @@
   "name": "Shadow Priest",
   "spec": "Shadow",
   "defaultRace": "undead",
+  "startBuffs": [
+    "spell:15473"
+  ],
   "bar": [
     {
       "key": "spell:10894",

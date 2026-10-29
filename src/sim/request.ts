@@ -5,6 +5,22 @@ const STAT_HEALTH = 34;
 // A live fight until the bosses are dead stops here at the latest.
 const LIVE_HEALTH_LIMIT_SECONDS = 1200;
 
+/** When lasting buffs are cast: long before the pull (and before any countdown), so they are simply up. */
+const START_BUFF_AT = '-20s';
+
+/**
+ * The rotation with the start buffs cast at START_BUFF_AT, before anything else. A pre-pull cast of the same spell is
+ * dropped (it would only cast it again).
+ */
+export function withStartBuffs(rotation: AplRotation, buffs: string[] = []): AplRotation {
+  const ids = buffs.filter((k) => k.startsWith('spell:')).map((k) => Number(k.slice(6)));
+  if (!ids.length) return rotation;
+  type Pre = { action?: { castSpell?: { spellId?: { spellId?: number } } } };
+  const others = ((rotation.prepullActions as Pre[] | undefined) ?? []).filter((p) => !ids.includes(p.action?.castSpell?.spellId?.spellId ?? -1));
+  const buffActions = ids.map((spellId) => ({ action: { castSpell: { spellId: { spellId } } }, doAtValue: { const: { val: START_BUFF_AT } } }));
+  return { ...rotation, prepullActions: [...buffActions, ...others] };
+}
+
 /**
  * Turns a job into the sim's RaidSimRequest (as JSON) for a fight of this many seconds. (A health fight is run as a
  * timed fight whose length is found by runJob: the sim's own health mode reports its DPS over a wrong length.)
@@ -13,7 +29,7 @@ export function buildRequest(job: SimJob, seconds: number): Record<string, unkno
   const { profile } = job;
   const player = structuredClone(profile.player);
   const rotation = job.rotation ?? player.rotation;
-  if (rotation) player.rotation = normalizeApl(rotation);
+  if (rotation) player.rotation = withStartBuffs(normalizeApl(rotation), job.startBuffs);
 
   const targetCount = Math.max(1, Math.min(3, Math.round(job.targets)));
   const boss = profile.encounter.targets[0];
@@ -47,16 +63,16 @@ export function buildRequest(job: SimJob, seconds: number): Record<string, unkno
 /**
  * The request for a live fight the player drives; a health fight really ends when the bosses die. The rotation, if
  * given, never acts (the engine waits for the player); it only answers which spell it would cast next (the hint).
- * Its pre-pull actions are left out, since those would run by themselves.
+ * Its pre-pull actions are left out, since those would run by themselves; only the start buffs are cast for you.
  */
-export function buildLiveRequest(profile: SimProfile, targets: number, fight: FightSpec, rotation?: AplRotation): Record<string, unknown> {
+export function buildLiveRequest(profile: SimProfile, targets: number, fight: FightSpec, rotation?: AplRotation, startBuffs?: string[]): Record<string, unknown> {
   const seconds = fight.kind === 'time' ? fight.seconds : LIVE_HEALTH_LIMIT_SECONDS;
   const req = buildRequest({ profile, targets, fight, iterations: 1, seed: 1 }, seconds) as {
     raid: { parties: Array<{ players: Array<Record<string, unknown>> }> };
     encounter: { useHealth?: boolean; targets: Array<{ stats: number[] }> };
   };
   const { prepullActions: _pre, ...hintOnly } = rotation ? normalizeApl(rotation) : { type: 'TypeAPL', priorityList: [] };
-  req.raid.parties[0].players[0].rotation = hintOnly;
+  req.raid.parties[0].players[0].rotation = withStartBuffs(hintOnly, startBuffs);
   if (fight.kind === 'health') {
     req.encounter.useHealth = true;
     for (const t of req.encounter.targets) {

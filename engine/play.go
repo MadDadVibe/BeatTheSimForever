@@ -108,8 +108,17 @@ func playStart(in startIn) (any, error) {
 	}
 	s.Reseed(rsr.SimOptions.RandomSeed)
 	s.Reset()
-	s.PrePull() // schedules the pull at 0
-	s.CurrentTime = -time.Duration(max(0, in.Countdown) * float64(time.Second))
+	s.PrePull() // schedules the pull at 0, and the rotation's pre-pull actions (the start buffs) before it
+	start := -time.Duration(max(0, in.Countdown) * float64(time.Second))
+	if s.CurrentTime < start {
+		// Run the start buffs' casts, up to where the countdown begins.
+		reached := false
+		s.AddPendingAction(&core.PendingAction{NextActionAt: start, Priority: core.ActionPriorityLow, OnAction: func(*core.Simulation) { reached = true }})
+		for !reached && !s.Step() {
+		}
+	}
+	s.CurrentTime = start
+	f.logs.Reset()
 	f.player = s.Raid.Parties[0].Players[0].GetCharacter()
 	live = f
 
