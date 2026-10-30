@@ -4,9 +4,9 @@ import type { SpecModule } from './classes/types';
 import { runFight, type FightSetup } from './game/fight';
 import { iconUrl, loadNames } from './game/names';
 import { showResults } from './game/results';
-import { rotationFromExport } from './sim/apl';
 import { loadEngine, loadProfiles, simFile } from './sim/client';
-import type { AplRotation, FightSpec, SimProfile } from './sim/types';
+import { CONSUMABLES, withOptions } from './sim/options';
+import type { FightSpec, SimProfile } from './sim/types';
 
 // The setup screen, and the way from it into a fight and on to its results.
 const app = document.querySelector<HTMLElement>('#app')!;
@@ -17,7 +17,6 @@ const status = document.querySelector<HTMLElement>('#status')!;
 const field = <T extends HTMLElement>(name: string) => form.elements.namedItem(name) as unknown as T;
 
 let profiles: Record<string, SimProfile> = {};
-let customRotation: AplRotation | null = null;
 let engineReady = false;
 
 const currentClass = () => CLASSES.find((c) => c.key === field<HTMLSelectElement>('class').value)!;
@@ -50,6 +49,10 @@ async function loadSpec() {
   if (currentSpec() !== spec) return; // another spec was picked meanwhile
   race.innerHTML = Object.keys(profiles).map((r) => `<option value="${r}">${raceName(r)}</option>`).join('');
   race.value = before in profiles ? before : spec.defaultRace in profiles ? spec.defaultRace : Object.keys(profiles)[0];
+  // A spec that picks its weapon imbue (an enhancement shaman) offers the choice, starting from the sim's.
+  const enh = Object.values(profiles)[0]?.player.enhancementShaman as { options?: { mainHandImbue?: string } } | undefined;
+  form.querySelector<HTMLElement>('[data-imbue]')!.hidden = !enh;
+  if (enh) field<HTMLSelectElement>('imbue').value = remember('imbue') ?? enh.options?.mainHandImbue ?? 'WindfuryImbue';
 }
 
 function syncFightFields() {
@@ -57,30 +60,29 @@ function syncFightFields() {
   form.querySelectorAll<HTMLElement>('[data-for]').forEach((el) => (el.hidden = el.dataset.for !== kind));
 }
 
-/** The setup's consumable switches and the profile's consumes each one stands for. */
-const CONSUMABLES: Record<string, string[]> = {
-  potions: ['defaultPotion'],
-  conjured: ['defaultConjured'],
-  explosives: ['fillerExplosive', 'sapperExplosive'],
-};
+/** The setup's switches that change the profile, each on unless switched off. */
+const SWITCHES = [...Object.keys(CONSUMABLES), 'raidBuffs', 'raidDebuffs'] as const;
+const on = (name: string) => field<HTMLInputElement>(name).checked;
 
 function readSetup(): FightSetup {
   const fight: FightSpec = field<HTMLSelectElement>('fight').value === 'time'
     ? { kind: 'time', seconds: Number(field<HTMLInputElement>('seconds').value) }
     : { kind: 'health', healthPerTarget: Number(field<HTMLInputElement>('health').value) };
-  // The sim's profiles count on the Tier 1 set bonuses; without the set they are switched off, for you and the sim.
-  const base = profiles[field<HTMLSelectElement>('race').value];
-  // Consumables that are switched off are taken out of the profile, so neither you nor the sim has them.
-  const consumes = { ...(base.player.consumes as Record<string, unknown> | undefined) };
-  for (const [name, keys] of Object.entries(CONSUMABLES)) if (!field<HTMLInputElement>(name).checked) keys.forEach((k) => delete consumes[k]);
-  const profile = { ...base, player: { ...base.player, consumes, foreverTier1Bonuses: field<HTMLInputElement>('tier1').checked } };
+  const profile = withOptions(profiles[field<HTMLSelectElement>('race').value], {
+    potions: on('potions'),
+    conjured: on('conjured'),
+    explosives: on('explosives'),
+    raidBuffs: on('raidBuffs'),
+    raidDebuffs: on('raidDebuffs'),
+    imbue: field<HTMLSelectElement>('imbue').value,
+  });
   return {
     spec: currentSpec(),
     profile,
     targets: Number(field<HTMLSelectElement>('targets').value),
     fight,
     countdown: 5,
-    rotation: customRotation ?? currentSpec().defaultRotation ?? profile.player.rotation!,
+    rotation: currentSpec().defaultRotation ?? profile.player.rotation!,
     hints: field<HTMLInputElement>('hints').checked,
   };
 }
@@ -115,17 +117,6 @@ form.addEventListener('submit', (e) => {
   void play(readSetup());
 });
 
-field<HTMLInputElement>('rotation').addEventListener('change', async () => {
-  const file = field<HTMLInputElement>('rotation').files?.[0];
-  try {
-    customRotation = file ? rotationFromExport(JSON.parse(await file.text())) : null;
-    status.textContent = file ? `Eigene Rota geladen: ${file.name}` : '';
-  } catch (err) {
-    customRotation = null;
-    status.textContent = `Rota nicht lesbar: ${err instanceof Error ? err.message : err}`;
-  }
-});
-
 function readHints(): boolean {
   try {
     return localStorage.getItem('hints') === '1';
@@ -134,13 +125,7 @@ function readHints(): boolean {
   }
 }
 field<HTMLInputElement>('hints').checked = readHints();
-try {
-  field<HTMLInputElement>('tier1').checked = localStorage.getItem('tier1') === '1';
-} catch { /* off */ }
-field<HTMLInputElement>('tier1').addEventListener('change', () => {
-  try { localStorage.setItem('tier1', field<HTMLInputElement>('tier1').checked ? '1' : '0'); } catch { /* not remembered */ }
-});
-for (const name of Object.keys(CONSUMABLES)) {
+for (const name of SWITCHES) {
   const box = field<HTMLInputElement>(name);
   try {
     box.checked = localStorage.getItem(name) !== '0';
@@ -149,6 +134,7 @@ for (const name of Object.keys(CONSUMABLES)) {
     try { localStorage.setItem(name, box.checked ? '1' : '0'); } catch { /* not remembered */ }
   });
 }
+field<HTMLSelectElement>('imbue').addEventListener('change', () => remember('imbue', field<HTMLSelectElement>('imbue').value));
 field<HTMLInputElement>('hints').addEventListener('change', () => {
   try { localStorage.setItem('hints', field<HTMLInputElement>('hints').checked ? '1' : '0'); } catch { /* not remembered */ }
 });
@@ -158,15 +144,8 @@ field<HTMLSelectElement>('class').innerHTML = CLASSES.map((c) => `<option value=
 field<HTMLSelectElement>('class').value = CLASSES.find((c) => c.specs.includes(lastSpec))!.key;
 fillSpecs(lastSpec.key);
 field<HTMLSelectElement>('fight').addEventListener('change', syncFightFields);
-// A rotation loaded for one spec means nothing for another.
-function dropCustomRotation() {
-  if (!customRotation) return;
-  customRotation = null;
-  field<HTMLInputElement>('rotation').value = '';
-  status.textContent = '';
-}
-field<HTMLSelectElement>('class').addEventListener('change', () => { fillSpecs(); dropCustomRotation(); void loadSpec(); });
-field<HTMLSelectElement>('spec').addEventListener('change', () => { dropCustomRotation(); void loadSpec(); });
+field<HTMLSelectElement>('class').addEventListener('change', () => { fillSpecs(); void loadSpec(); });
+field<HTMLSelectElement>('spec').addEventListener('change', () => void loadSpec());
 
 const start = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
 start.disabled = true;

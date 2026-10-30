@@ -9,7 +9,10 @@ the sim's gear, talents and rotation for each.
 ## Playing
 
 Pick a class, spec and race, one to three bosses and a fight (a set time, or until the bosses are dead), and whether
-potions, Demonic Runes or Thistle Tea and explosives are used (by you and the sim alike). Before the fight you see
+potions, Demonic Runes or Thistle Tea, explosives, the raid's buffs and the raid's debuffs on the bosses are there (for
+you and the sim alike; an enhancement shaman also picks a weapon imbue). Lasting buffs of your own (Shadowform, aspects,
+a shaman's totems) are up from the start. The Tier 1 set bonuses are always off, since the sim's values for them are
+placeholders. Before the fight you see
 the character the sim plays (talents, stats with gear and buffs, gear, consumables) and can rearrange your action bar:
 drag a spell onto another to swap them, point at a spell and press a key to bind it (Backspace clears it). Your bar is
 remembered in this browser. Press the space bar or "Bereit" to start a 5-second countdown in which you may precast.
