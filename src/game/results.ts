@@ -23,7 +23,11 @@ export async function showResults(root: HTMLElement, log: FightLog, rotation: Ap
 
   root.innerHTML = `
     <div class="results">
-      <h1>${log.abandoned ? 'Fight beendet' : 'Geschafft!'}</h1>
+      <header class="results-top">
+        <button type="button" data-act="again">Nochmal</button>
+        <h1>${log.abandoned ? 'Fight beendet' : 'Geschafft!'}</h1>
+        <button type="button" class="secondary" data-act="home">Home Screen</button>
+      </header>
       <div class="score">
         <div><small>Du</small><strong>${nf(myDps)}</strong><small>DPS</small></div>
         <div data-el="sim"><small>Sim</small><strong>…</strong><small>rechnet</small></div>
@@ -42,13 +46,14 @@ export async function showResults(root: HTMLElement, log: FightLog, rotation: Ap
       <p class="muted small">Oben du, unten der erste Fight des Sims. Wischen zum Scrollen.</p>
       <div class="lanes" data-el="lanes"></div>
       <div class="actions">
-        <button type="button" data-el="again">Nochmal</button>
-        <button type="button" class="secondary" data-el="settings">Einstellungen</button>
+        <button type="button" data-act="again">Nochmal</button>
+        <button type="button" class="secondary" data-act="home">Home Screen</button>
       </div>
     </div>`;
   const el = (name: string) => root.querySelector<HTMLElement>(`[data-el="${name}"]`)!;
-  el('again').addEventListener('click', again);
-  el('settings').addEventListener('click', settings);
+  // Both buttons are there twice: at the top, so they are there at once, and at the end.
+  root.querySelectorAll('[data-act="again"]').forEach((b) => b.addEventListener('click', again));
+  root.querySelectorAll('[data-act="home"]').forEach((b) => b.addEventListener('click', settings));
   spellRows(el('rows'), you, null);
   el('lanes').innerHTML = lanes(you, null, setup.countdown);
 
