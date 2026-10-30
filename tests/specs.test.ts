@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { SPECS } from '../src/classes';
-import { liveApi, type LiveEngine, type LiveSpell, type LiveState } from '../src/sim/live';
+import { liveApi, type LiveEngine, type LiveSpell } from '../src/sim/live';
 import { withOptions, type SetupOptions } from '../src/sim/options';
 import { buildLiveRequest } from '../src/sim/request';
 import { parseTimeline } from '../src/sim/result';
 import { runJob } from '../src/sim/run';
+import type { AplRotation, SimProfile } from '../src/sim/types';
 import { loadSim, profiles, simBuilt } from './sim-node';
 
 // Every spec: its file fits what the engine knows, and a player who presses what the hint says reaches about what
@@ -12,6 +13,29 @@ import { loadSim, profiles, simBuilt } from './sim-node';
 // white hits, pets) against the sim.
 
 const ALL_ON: SetupOptions = { potions: true, conjured: true, explosives: true, raidBuffs: true, raidDebuffs: true };
+
+/** The damage of a player who presses what the hint says, on the boss it says, once nothing is being cast. */
+function playByHint(api: ReturnType<typeof liveApi>, byKey: Map<string, LiveSpell>, profile: SimProfile, targets: number, seconds: number, rotation: AplRotation, startBuffs?: string[]): number {
+  let state = api.start(buildLiveRequest(profile, targets, { kind: 'time', seconds }, rotation, startBuffs), 11).state;
+  let logs = '';
+  let finished = false;
+  for (let t = 0; !finished; t += 0.05) {
+    const step = api.advance(t);
+    logs += step.logs;
+    state = step.state;
+    finished = step.finished;
+    // A hinted spell off the global cooldown goes at once.
+    for (let i = 0; i < 3 && !finished && state.hint && !state.cast && !state.channel; i++) {
+      const spell = byKey.get(state.hint);
+      if (!spell || (spell.gcd > 0 && state.gcd > 0)) break;
+      const r = api.cast(spell.index, state.hintTarget ?? 0);
+      logs += r.logs;
+      state = r.state;
+      if (!r.ok) break;
+    }
+  }
+  return parseTimeline(logs, String(profile.player.name)).reduce((s, e) => s + (e.type === 'damage' ? e.amount : 0), 0);
+}
 
 describe('spec files', () => {
   it.each(SPECS.map((s) => [s.key, s] as const))('%s is complete', (_key, spec) => {
@@ -40,29 +64,34 @@ describe.skipIf(!simBuilt)('every spec in the live fight', () => {
     for (const p of Object.values(all)) api.start(buildLiveRequest(p, 1, { kind: 'time', seconds: 10 }, rotation), 1).spells.forEach((s) => anyRace.add(s.key));
     for (const b of spec.bar) expect(anyRace.has(b.key), `${b.key} (${b.short})`).toBe(true);
 
-    api.start(buildLiveRequest(profile, 1, { kind: 'time', seconds }, rotation, spec.startBuffs), 11);
-    let logs = '';
-    let state: LiveState = start.state;
-    let finished = false;
-    for (let t = 0; !finished; t += 0.05) {
-      const step = api.advance(t);
-      logs += step.logs;
-      state = step.state;
-      finished = step.finished;
-      // Press what the hint says, once nothing is being cast; a hinted spell off the global cooldown goes at once.
-      for (let i = 0; i < 3 && !finished && state.hint && !state.cast && !state.channel; i++) {
-        const spell = byKey.get(state.hint);
-        if (!spell || (spell.gcd > 0 && state.gcd > 0)) break;
-        const r = api.cast(spell.index, 0);
-        logs += r.logs;
-        state = r.state;
-        if (!r.ok) break;
-      }
-    }
-    const damage = parseTimeline(logs, String(profile.player.name)).reduce((s, e) => s + (e.type === 'damage' ? e.amount : 0), 0);
+    const damage = playByHint(api, byKey, profile, 1, seconds, rotation, spec.startBuffs);
     const reference = runJob(sim, { profile, rotation, startBuffs: spec.startBuffs, targets: 1, fight: { kind: 'time', seconds }, iterations: 200, seed: 1 });
     const share = damage / seconds / reference.dps;
     console.log(`${spec.key}: ${Math.round(damage / seconds)} DPS live, ${Math.round(reference.dps)} sim (${Math.round(100 * share)} %)`);
+    expect(share).toBeGreaterThan(0.75);
+    expect(share).toBeLessThan(1.25);
+  });
+});
+
+describe.skipIf(!simBuilt)('several bosses', () => {
+  it.each(['shadow-priest', 'affliction-warlock', 'balance-druid', 'survival-hunter'])('%s keeps its DoTs up on every boss, in the sim and by the hint', async (key) => {
+    const sim = await loadSim();
+    const spec = SPECS.find((s) => s.key === key)!;
+    const profile = withOptions(profiles(key)[spec.defaultRace], ALL_ON);
+    const rotation = spec.defaultRotation ?? profile.player.rotation!;
+    const seconds = 90;
+    const job = (targets: number) => runJob(sim, { profile, rotation, startBuffs: spec.startBuffs, targets, fight: { kind: 'time', seconds }, iterations: 200, seed: 1 });
+    const one = job(1), three = job(3);
+    // Every boss gets the first DoT.
+    const first = Number(spec.review.dots[0].slice(6));
+    const casts = (r: typeof one) => r.spells.find((x) => x.key === `spell:${first}`)?.castsPerFight ?? 0;
+    expect(casts(three)).toBeGreaterThan(2 * casts(one));
+    expect(three.dps).toBeGreaterThan(one.dps);
+
+    const api = liveApi(globalThis as unknown as LiveEngine);
+    const byKey = new Map<string, LiveSpell>(api.start(buildLiveRequest(profile, 3, { kind: 'time', seconds }, rotation, spec.startBuffs), 11).spells.map((s) => [s.key, s]));
+    const share = playByHint(api, byKey, profile, 3, seconds, rotation, spec.startBuffs) / seconds / three.dps;
+    console.log(`${key}, 3 bosses: ${Math.round(100 * share)} % of the sim`);
     expect(share).toBeGreaterThan(0.75);
     expect(share).toBeLessThan(1.25);
   });
