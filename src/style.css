@@ -261,3 +261,7 @@ ol.prio, ol.dmg { list-style: none; margin: 0; padding: 0; display: grid; gap: 4
   .boss-art { display: none; }
   .side { min-height: 0; }
 }
+
+/* An empty place on the bar: only its key, and only visible as a place */
+.action.empty { background: transparent; border-style: dashed; opacity: 0.55; }
+.fight:not(.prepping) .action.empty { opacity: 0.25; pointer-events: none; }
