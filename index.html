@@ -43,9 +43,10 @@
           </label>
           <label class="wide check"><input name="raidBuffs" type="checkbox" checked /> Raid-Buffs (Ausdauer, Wille, Mal der Wildnis, Segen, Totems anderer Schamanen …)</label>
           <label class="wide check"><input name="raidDebuffs" type="checkbox" checked /> Raid-Debuffs auf den Bossen (Sunder Armor, Curse of Elements, Faerie Fire …)</label>
-          <label class="wide check"><input name="potions" type="checkbox" checked /> Tränke (Mana-, Wut-, Spellblasting-Trank …)</label>
-          <label class="wide check"><input name="conjured" type="checkbox" checked /> Demonic Rune und Thistle Tea</label>
-          <label class="wide check"><input name="explosives" type="checkbox" checked /> Sprengstoffe (Sapper, Granaten, Dynamit)</label>
+          <label class="wide check"><input name="potions" type="checkbox" /> Tränke (Mana-, Wut-, Spellblasting-Trank …)</label>
+          <label class="wide check"><input name="conjured" type="checkbox" /> Demonic Rune und Thistle Tea</label>
+          <label class="wide check"><input name="explosives" type="checkbox" /> Sprengstoffe (Sapper, Granaten, Dynamit)</label>
+          <label class="wide check"><input name="channelClipping" type="checkbox" /> Channel Clipping: ein neuer Spell bricht einen Channel (z. B. Mind Flay) ab; sonst läuft er voll durch</label>
           <label class="wide check"><input name="hints" type="checkbox" /> Tipp anzeigen: welche Taste laut Sim als Nächstes optimal ist</label>
           <button type="submit">Fight starten</button>
         </form>
@@ -56,7 +57,7 @@
           <p>Tippe auf die Spell-Buttons oder nutze die Tasten: untere Reihe 1 bis 8, obere Reihe Q, E, R, F, C, X, Y, T
           (bei vielen Spells eine dritte Reihe 9, 0, -, =, G, V, B, N). Tippe auf einen Boss, um ihn anzuvisieren
           (am PC auch Tab oder F1 bis F3). Ein Spell, den du kurz vor Ende des GCD oder eines Casts drückst, wird direkt danach
-          gewirkt. Ein neuer Spell während eines Channels (z. B. Mind Flay) bricht ihn ab. Vor dem Kampf siehst du Talente,
+          gewirkt. Ein neuer Spell während eines Channels (z. B. Mind Flay) bricht ihn nur ab, wenn Channel Clipping an ist; sonst wartet er, bis der Channel durch ist. Vor dem Kampf siehst du Talente,
           Gear und Werte und kannst die Aktionsleiste umbauen; mit „Bereit“ oder der Leertaste startet ein Countdown von
           5 Sekunden, in dem du schon casten darfst. Der Tipp (oben rechts ein- und ausschaltbar) leuchtet den Spell auf, den
           der Sim als Nächstes wirken würde, und markiert die passende Zeile der Prioliste. Neben dem Fight (am Handy als Reiter)
