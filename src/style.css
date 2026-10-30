@@ -95,7 +95,13 @@ main.in-fight { max-width: 900px; padding: 8px; padding-bottom: max(8px, env(saf
 .loading { text-align: center; color: var(--muted); margin-top: 40vh; }
 
 /* Results */
-.results h1 { text-align: center; }
+.results h1 { text-align: center; margin: 0; font-size: 1.4rem; }
+.results-top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; margin-top: 4px; }
+.results-top button { min-height: 44px; padding: 0 12px; white-space: nowrap; border-radius: 8px; font-weight: 600; background: var(--accent-strong); color: #fff; border: 0; }
+.results-top button:first-child { justify-self: start; }
+.results-top button:last-child { justify-self: end; }
+.results-top .secondary { background: var(--panel); border: 1px solid var(--line); color: var(--text); }
+@media (max-width: 420px) { .results-top button { padding: 0 8px; font-size: 0.85rem; } .results h1 { font-size: 1.1rem; } }
 .score { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0 8px; }
 .score > div { display: flex; flex-direction: column; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 4px; }
 .score strong { font-size: 1.8rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
