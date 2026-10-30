@@ -94,7 +94,8 @@ class FightScreen {
   private phase: Phase = 'prep';
   private spells: LiveSpell[];
   private slots: BarSlot[];
-  private buttons: Button[] = [];
+  private buttons: Button[] = []; // the places with a spell
+  private places: HTMLButtonElement[] = []; // every place of the bar, empty ones too, by slot
   private pointed: number | null = null; // the bar slot under the mouse (or last tapped) while preparing
   private drag: { from: number; x: number; y: number; ghost: HTMLElement | null } | null = null;
   private hints: boolean;
@@ -168,7 +169,7 @@ class FightScreen {
           <div class="sheet" data-el="sheet">${sheetSkeleton(spec, profile)}
             <details class="sheet-part prio-part"><summary>Prioliste des Sims</summary>${prio}</details>
           </div>
-          <p class="muted small prep-help">Aktionsleiste anpassen: Spell auf einen anderen ziehen tauscht die beiden. Mit der Maus
+          <p class="muted small prep-help">Aktionsleiste anpassen: Spell auf einen anderen oder einen leeren Platz ziehen tauscht die beiden. Mit der Maus
             auf einen Spell zeigen (am Handy antippen) und eine Taste drücken legt die Taste neu fest; Rücktaste entfernt sie.</p>
           <button class="ready" data-el="ready" type="button">Bereit <small>(Leertaste)</small></button>
         </section>
@@ -229,38 +230,47 @@ class FightScreen {
   private renderBar() {
     this.el.bar.innerHTML = '';
     this.buttons = [];
+    this.places = [];
     const rows = Math.max(1, Math.ceil(this.slots.length / ROW_LENGTH));
     this.slots.forEach((slot, i) => {
-      const spell = this.spells.find((s) => s.key === slot.key)!;
+      const spell = this.spells.find((s) => s.key === slot.key);
       const el = document.createElement('button');
       el.type = 'button';
-      el.className = 'action';
+      el.className = spell ? 'action' : 'action empty';
+      el.dataset.slot = String(i);
+      // The first row is the bottom one; each further row goes on top.
+      el.style.gridRow = String(rows - Math.floor(i / ROW_LENGTH));
+      el.style.gridColumn = String((i % ROW_LENGTH) + 1);
+      el.classList.toggle('pointed', this.pointed === i);
+      this.el.bar.appendChild(el);
+      this.places.push(el);
+      el.addEventListener('pointerenter', () => { if (this.phase === 'prep' && !this.drag) this.point(i); });
+      el.addEventListener('pointerleave', () => { if (this.phase === 'prep' && !this.drag && this.pointed === i && matchMedia('(hover: hover)').matches) this.point(null); });
+      if (!spell) {
+        // An empty place: a spell can be dragged onto it, and it can get a key (tap it, then press the key).
+        el.innerHTML = `<span class="hotkey">${escapeHtml(keyLabel(slot.hotkey))}</span>`;
+        el.setAttribute('aria-label', `Leerer Platz ${keyLabel(slot.hotkey)}`);
+        el.addEventListener('pointerdown', (e) => { e.preventDefault(); if (this.phase === 'prep') this.point(i); });
+        return;
+      }
       const icon = iconUrl(slot.key);
       el.innerHTML = `${icon ? `<img src="${icon}" alt="" onerror="this.remove()" draggable="false">` : ''}<span class="short">${escapeHtml(slot.short)}</span><span class="hotkey">${escapeHtml(keyLabel(slot.hotkey))}</span><span class="cd"></span>`;
       el.title = label(slot.key);
       el.setAttribute('aria-label', label(slot.key));
-      el.dataset.slot = String(i);
-      // The first row of spells is the bottom one; each further row goes on top.
-      el.style.gridRow = String(rows - Math.floor(i / ROW_LENGTH));
-      el.style.gridColumn = String((i % ROW_LENGTH) + 1);
       const button: Button = { key: slot.key, short: slot.short, spell, hotkey: slot.hotkey, el };
       el.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         if (this.phase === 'prep') this.dragStart(i, e);
         else this.press(button);
       });
-      el.addEventListener('pointerenter', () => { if (this.phase === 'prep' && !this.drag) this.point(i); });
-      el.addEventListener('pointerleave', () => { if (this.phase === 'prep' && !this.drag && this.pointed === i && matchMedia('(hover: hover)').matches) this.point(null); });
       el.addEventListener('click', (e) => { if (e.detail === 0 && this.phase === 'fight') this.press(button); }); // keyboard "click"
-      el.classList.toggle('pointed', this.pointed === i);
-      this.el.bar.appendChild(el);
       this.buttons.push(button);
     });
   }
 
   private point(i: number | null) {
     this.pointed = i;
-    this.buttons.forEach((b, j) => b.el.classList.toggle('pointed', j === i));
+    this.places.forEach((el, j) => el.classList.toggle('pointed', j === i));
   }
 
   // ---------- preparing: drag a spell onto another to swap them ----------
@@ -274,17 +284,18 @@ class FightScreen {
     const d = this.drag;
     if (!d) return;
     if (!d.ghost && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 8) {
-      d.ghost = this.buttons[d.from].el.cloneNode(true) as HTMLElement;
+      const from = this.places[d.from];
+      d.ghost = from.cloneNode(true) as HTMLElement;
       d.ghost.classList.add('ghost');
-      d.ghost.style.width = `${this.buttons[d.from].el.offsetWidth}px`;
+      d.ghost.style.width = `${from.offsetWidth}px`;
       document.body.appendChild(d.ghost);
-      this.buttons[d.from].el.classList.add('dragging');
+      from.classList.add('dragging');
     }
     if (d.ghost) {
       d.ghost.style.left = `${e.clientX}px`;
       d.ghost.style.top = `${e.clientY}px`;
       const over = this.slotAt(e.clientX, e.clientY);
-      this.buttons.forEach((b, j) => b.el.classList.toggle('drop', j === over && j !== d.from));
+      this.places.forEach((el, j) => el.classList.toggle('drop', j === over && j !== d.from));
     }
   };
 
