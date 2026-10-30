@@ -3,15 +3,19 @@ import { live } from '../sim/client';
 import type { CastBlock, LiveSpell, LiveState, Resource } from '../sim/live';
 import { parseTimeline } from '../sim/result';
 import type { AplRotation, FightSpec, SimProfile, TimelineEvent } from '../sim/types';
-import { bindable, bindKey, keyLabel, loadLayout, saveLayout, swapSlots, type BarSlot } from './layout';
+import { BOSSES } from './bosses';
+import { bindable, bindKey, keyLabel, loadLayout, ROW_LENGTH, saveLayout, swapSlots, type BarSlot } from './layout';
+import { DamageMeter } from './meter';
 import { escapeHtml, iconUrl, label } from './names';
+import { priorityEntries, priorityHtml } from './priority';
 import { fillSheet, sheetSkeleton } from './sheet';
 
 // The fight screen: bosses at the top, you in the middle, your action bar at the bottom. The engine runs the fight;
 // this screen moves its clock along with the real one, sends your button presses and shows what it reports.
 // Before the fight it is a preparation screen: your character sheet, and an action bar you can rearrange (drag a
 // spell onto another to swap them) and rebind (point at a spell and press a key). The countdown starts when you are
-// ready (space bar or the button).
+// ready (space bar or the button). Beside the fight (on a phone: between the boss and you) are the sim's priority list,
+// its current line lit up with the hint, and a damage meter.
 
 export interface FightSetup {
   /** The spec you play. */
@@ -55,6 +59,15 @@ const BLOCK_TEXT: Record<CastBlock, string> = {
 interface Button { key: string; short: string; spell: LiveSpell; hotkey: string; el: HTMLButtonElement }
 
 type Phase = 'prep' | 'fight';
+type Tab = 'prio' | 'meter';
+
+function savedTab(): Tab {
+  try {
+    return localStorage.getItem('sideTab') === 'meter' ? 'meter' : 'prio';
+  } catch {
+    return 'prio';
+  }
+}
 
 export function runFight(root: HTMLElement, setup: FightSetup): Promise<FightLog> {
   return new Promise((resolve, reject) => {
@@ -89,6 +102,9 @@ class FightScreen {
   private target = 0;
   private events: TimelineEvent[] = [];
   private damageBy: number[];
+  private meter = new DamageMeter();
+  private meterDrawn = -1; // when the meter was last drawn (performance.now())
+  private hintEntry: number | null = null; // the line of the priority list lit up
   private busy = false; // a request to the engine is on its way
   private queued: Button | null = null;
   private done = false;
@@ -129,6 +145,8 @@ class FightScreen {
 
   private render() {
     const { spec, targets, profile } = this.setup;
+    const prio = priorityHtml(priorityEntries(this.setup.rotation, new Set(this.spells.map((s) => s.key))));
+    const tab = savedTab();
     this.root.innerHTML = `
       <div class="fight prepping" data-el="fight">
         <header class="fight-top">
@@ -140,13 +158,16 @@ class FightScreen {
         <section class="bosses" style="--n:${targets}">
           ${Array.from({ length: targets }, (_, i) => `
             <button class="boss" type="button" data-boss="${i}">
-              <span class="boss-name">Boss ${i + 1}</span>
+              <img class="boss-art" src="${BOSSES[i].art}" alt="" draggable="false">
+              <span class="boss-name">${BOSSES[i].name}</span>
               <span class="bar boss-bar"><span data-el="bossFill${i}"></span><em data-el="bossText${i}"></em></span>
               <span class="auras" data-el="bossAuras${i}"></span>
             </button>`).join('')}
         </section>
         <section class="prep" data-el="prep">
-          <div class="sheet" data-el="sheet">${sheetSkeleton(spec, profile)}</div>
+          <div class="sheet" data-el="sheet">${sheetSkeleton(spec, profile)}
+            <details class="sheet-part prio-part"><summary>Prioliste des Sims</summary>${prio}</details>
+          </div>
           <p class="muted small prep-help">Aktionsleiste anpassen: Spell auf einen anderen ziehen tauscht die beiden. Mit der Maus
             auf einen Spell zeigen (am Handy antippen) und eine Taste drücken legt die Taste neu fest; Rücktaste entfernt sie.</p>
           <button class="ready" data-el="ready" type="button">Bereit <small>(Leertaste)</small></button>
@@ -155,6 +176,14 @@ class FightScreen {
           <span class="focus-name" data-el="focusName"></span>
           <div class="auras big" data-el="focusAuras"></div>
         </section>
+        <aside class="side" data-tab="${tab}" data-el="side">
+          <div class="tabs" role="tablist">
+            <button type="button" role="tab" data-tab="prio" aria-selected="${tab === 'prio'}">Prioliste</button>
+            <button type="button" role="tab" data-tab="meter" aria-selected="${tab === 'meter'}">Schaden</button>
+          </div>
+          <section class="panel prio-panel" data-el="prioPanel"><h2>Prioliste des Sims</h2>${prio}</section>
+          <section class="panel meter-panel" data-el="meterPanel"><h2>Schaden</h2><div data-el="meterList"></div></section>
+        </aside>
         <section class="me">
           <div class="countdown" data-el="countdown"></div>
           <div class="auras player-auras" data-el="playerAuras"></div>
@@ -174,6 +203,14 @@ class FightScreen {
       el.addEventListener('pointerdown', (e) => { e.preventDefault(); this.target = Number(el.dataset.boss); }));
     this.el.quit.addEventListener('click', () => this.end(true));
     this.el.ready.addEventListener('click', () => this.begin());
+    this.el.side.querySelectorAll<HTMLButtonElement>('[role=tab]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const t = b.dataset.tab as Tab;
+        this.el.side.dataset.tab = t;
+        this.el.side.querySelectorAll('[role=tab]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
+        try { localStorage.setItem('sideTab', t); } catch { /* not remembered */ }
+      }));
+    this.el.meterList.innerHTML = this.meter.html(0);
     this.el.hintToggle.addEventListener('click', () => {
       this.hints = !this.hints;
       this.el.hintToggle.setAttribute('aria-pressed', String(this.hints));
@@ -188,6 +225,7 @@ class FightScreen {
   private renderBar() {
     this.el.bar.innerHTML = '';
     this.buttons = [];
+    const rows = Math.max(1, Math.ceil(this.slots.length / ROW_LENGTH));
     this.slots.forEach((slot, i) => {
       const spell = this.spells.find((s) => s.key === slot.key)!;
       const el = document.createElement('button');
@@ -198,6 +236,9 @@ class FightScreen {
       el.title = label(slot.key);
       el.setAttribute('aria-label', label(slot.key));
       el.dataset.slot = String(i);
+      // The first row of spells is the bottom one; each further row goes on top.
+      el.style.gridRow = String(rows - Math.floor(i / ROW_LENGTH));
+      el.style.gridColumn = String((i % ROW_LENGTH) + 1);
       const button: Button = { key: slot.key, short: slot.short, spell, hotkey: slot.hotkey, el };
       el.addEventListener('pointerdown', (e) => {
         e.preventDefault();
@@ -334,6 +375,7 @@ class FightScreen {
       this.events.push(e);
       if (e.type === 'damage') {
         this.damageBy[e.target] = (this.damageBy[e.target] ?? 0) + e.amount;
+        this.meter.add(e.key, e.amount, e.crit);
         if (e.amount > 0) this.floatNumber(e.target, e.amount, e.crit);
       }
     }
@@ -418,7 +460,7 @@ class FightScreen {
     }
 
     // The boss you aim at, large
-    this.el.focusName.textContent = this.setup.targets > 1 ? `Ziel: Boss ${this.target + 1}` : '';
+    this.el.focusName.textContent = this.setup.targets > 1 ? `Ziel: ${BOSSES[this.target].name}` : '';
     this.el.focusAuras.innerHTML = auraIcons(spec.targetAuras, s.targets[this.target]?.auras ?? [], since, true);
 
     // You
@@ -466,6 +508,24 @@ class FightScreen {
       b.el.classList.toggle('no-mana', !!b.spell.costType && s.costs[b.spell.index] > have(s, b.spell.costType));
       b.el.classList.toggle('queued', this.queued === b);
       b.el.classList.toggle('hint', this.hints && b.key === hint);
+    }
+
+    // The line of the priority list behind the hint, and the damage meter (a few times a second is enough)
+    const entry = this.hints && t >= 0 ? (s.hintEntry ?? null) : null;
+    if (entry !== this.hintEntry) {
+      this.hintEntry = entry;
+      this.root.querySelectorAll('.prio li').forEach((li) => li.classList.toggle('now', Number((li as HTMLElement).dataset.entry) === entry));
+      // Keep the lit line in sight in the panel (without scrolling the page).
+      const panel = this.el.prioPanel, now = panel.querySelector<HTMLElement>('li.now');
+      if (now && panel.clientHeight) {
+        const top = now.offsetTop - panel.offsetTop, bottom = top + now.offsetHeight;
+        if (top < panel.scrollTop) panel.scrollTop = top - 4;
+        else if (bottom > panel.scrollTop + panel.clientHeight) panel.scrollTop = bottom - panel.clientHeight + 4;
+      }
+    }
+    if (this.phase === 'fight' && performance.now() - this.meterDrawn > 250) {
+      this.meterDrawn = performance.now();
+      this.el.meterList.innerHTML = this.meter.html(Math.max(0, t));
     }
   }
 

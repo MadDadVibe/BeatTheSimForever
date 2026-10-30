@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { liveApi, type LiveEngine, type LiveState } from '../src/sim/live';
 import { buildLiveRequest } from '../src/sim/request';
 import { parseTimeline } from '../src/sim/result';
@@ -143,12 +143,21 @@ describe.skipIf(!simBuilt)('hint', () => {
     expect(state.hint).toBeUndefined(); // before the pull
     const first = api.advance(0.01).state;
     expect(first.hint).toBe(SHADOWFORM); // Tobias's rotation: Shadowform first if it is not up
+    expect(first.hintEntry).toBe(0); // and that is the first line of its priority list
     const idx = (key: string) => spells.filter((s) => s.key === key).sort((a, b) => b.rank - a.rank)[0].index;
     const r = api.cast(idx(SHADOWFORM), 0);
     expect(r.ok).toBe(true);
     expect(r.state.gcd).toBeGreaterThan(0);
     expect(r.state.hint).toBeDefined();
     expect(r.state.hint).not.toBe(SHADOWFORM);
+    // The line behind the hint is one the priority list shows, and it casts the hinted spell (or is the line for the
+    // major cooldowns, which names none: here the potion).
+    vi.stubGlobal('document', { baseURI: 'http://localhost/' }); // the names module reads the page's address
+    const { priorityEntries } = await import('../src/game/priority');
+    const entry = priorityEntries(shadowPriest.defaultRotation!, new Set(spells.map((s) => s.key))).find((e) => e.index === r.state.hintEntry);
+    expect(entry).toBeDefined();
+    if (entry!.keys.length) expect(entry!.keys).toContain(r.state.hint);
+    else expect(entry!.title).toMatch(/Cooldowns/);
     // The rotation never acts by itself.
     const later = api.advance(10);
     expect(parseTimeline(later.logs, 'Shadow').filter((e) => e.type === 'cast')).toEqual([]);

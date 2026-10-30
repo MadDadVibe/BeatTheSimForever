@@ -45,6 +45,8 @@ export interface LiveState {
   hint?: string;
   /** The boss the hinted spell goes on, when the rotation picks one (a DoT kept up on every boss). */
   hintTarget?: number;
+  /** The entry of the rotation's priority list that chose the hint (its index). */
+  hintEntry?: number;
   /** Only when the rotation moves (a hunter weaving melee between shots): your distance to the boss, in yards. */
   distance?: number;
   moving?: boolean;
