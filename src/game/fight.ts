@@ -187,6 +187,10 @@ class FightScreen {
         <section class="me">
           <div class="countdown" data-el="countdown"></div>
           <div class="auras player-auras" data-el="playerAuras"></div>
+          <div class="range" data-el="range" hidden>
+            <div class="range-track" data-el="rangeTrack"><i data-el="rangeMark"></i></div>
+            <div class="range-text"><em data-el="rangeText"></em><span data-el="rangeZones"></span></div>
+          </div>
           <div class="bar cast-bar" data-el="castBar"><span data-el="castFill"></span><em data-el="castText"></em></div>
           ${spec.resources.map((r) => r === 'combo'
             ? '<div class="combo" data-el="combo">' + '<i></i>'.repeat(5) + '</div>'
@@ -474,6 +478,7 @@ class FightScreen {
       this.el[r + 'Fill'].style.width = `${(100 * now) / Math.max(1, max)}%`;
       this.el[r + 'Text'].textContent = `${Math.round(now).toLocaleString('de-DE')} / ${Math.round(max).toLocaleString('de-DE')}`;
     }
+    if (s.distance !== undefined) rangeGauge(this.el, s);
     const bar = this.el.castBar;
     const simNow = s.time + since;
     if (s.cast) {
@@ -505,7 +510,10 @@ class FightScreen {
       const span = cd > gcdLeft ? Math.max(cd, b.spell.cooldown) : 1.5;
       cdEl.style.setProperty('--p', String(wait > 0 ? clamp(wait / span) : 0));
       cdEl.textContent = cd > 1.5 ? (cd >= 60 ? `${Math.ceil(cd / 60)}m` : Math.ceil(cd).toString()) : '';
-      b.el.classList.toggle('no-mana', !!b.spell.costType && s.costs[b.spell.index] > have(s, b.spell.costType));
+      const noResource = !!b.spell.costType && s.costs[b.spell.index] > have(s, b.spell.costType);
+      b.el.classList.toggle('no-mana', noResource);
+      // What cannot be pressed now (on cooldown, short of its resource, out of its range) is shown faint.
+      b.el.classList.toggle('unusable', noResource || cd > gcdLeft + 0.05 || s.usable?.[b.spell.index] === false);
       b.el.classList.toggle('queued', this.queued === b);
       b.el.classList.toggle('hint', this.hints && b.key === hint);
     }
@@ -569,6 +577,23 @@ class FightScreen {
     const duration = Math.max(0.1, abandoned ? this.now() : this.state.time);
     this.finish({ setup: this.setup, duration, timeline: this.events, abandoned });
   }
+}
+
+const RANGE_MAX = 40;
+
+/** Draws the distance gauge: melee range, the dead zone and shooting range, with where you stand (and walk to). */
+function rangeGauge(el: Record<string, HTMLElement>, s: LiveState) {
+  const melee = s.meleeRange ?? 5, ranged = s.rangedRange ?? 8, d = s.distance ?? 0;
+  const at = (y: number) => `${(100 * Math.min(RANGE_MAX, y)) / RANGE_MAX}%`;
+  el.range.hidden = false;
+  el.rangeTrack.style.setProperty('--melee', at(melee));
+  el.rangeTrack.style.setProperty('--ranged', at(ranged));
+  el.rangeMark.style.left = at(d);
+  const zone = d <= melee ? 'melee' : d < ranged ? 'dead' : 'ranged';
+  el.range.dataset.zone = zone;
+  const name = { melee: 'Nahkampf', dead: 'Dead Zone', ranged: 'Fernkampf' }[zone];
+  el.rangeText.textContent = `${d.toFixed(1).replace('.', ',')} Yards · ${name}${s.moving && s.movingTo !== undefined ? ` → ${s.movingTo}` : ''}`;
+  el.rangeZones.textContent = `Nahkampf 0–${melee} · Dead Zone ${melee}–${ranged} · Fernkampf ${ranged}–${RANGE_MAX}`;
 }
 
 /** The effects in show that are up, as icons with the time left. withMissing: also show those that are not up, dimmed. */

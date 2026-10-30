@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/rand"
 	"reflect"
 	"runtime/debug"
@@ -309,7 +310,7 @@ func (f *liveFight) move(yards float64) map[string]any {
 	switch {
 	case p.IsCasting(s):
 		reason = "casting"
-	case p.IsMoving() || p.IsRooted() || p.DistanceFromTarget == yards:
+	case p.IsRooted() || (!p.IsMoving() && p.DistanceFromTarget == yards):
 		reason = "cannot"
 	}
 	if reason == "" {
@@ -321,6 +322,35 @@ func (f *liveFight) move(yards float64) map[string]any {
 	logs := f.logs.String()
 	f.logs.Reset()
 	return map[string]any{"ok": reason == "", "reason": reason, "logs": logs, "state": f.state()}
+}
+
+// usable is whether a spell could be cast now, leaving aside the global cooldown and a cast or channel under way (which
+// pass by themselves): its own conditions (the distance a hunter needs for a shot or a melee attack, say), its resource,
+// and that only instant spells go while walking.
+func (f *liveFight) usable(spell *core.Spell) bool {
+	s, p := f.sim, f.player
+	if spell.ExtraCastCondition != nil && !spell.ExtraCastCondition(s, p.CurrentTarget) {
+		return false
+	}
+	if spell.DefaultCast.CastTime > 0 && p.IsMoving() {
+		return false
+	}
+	return spell.Cost == nil || spell.Cost.MeetsRequirement(s, spell)
+}
+
+// walked is how far from the boss the player is right now, and where they are walking to. The sim only counts the way
+// walked when something happens; in between it is worked out from the walking speed, as the sim itself does.
+func walked(s *core.Simulation, p *core.Character) (distance, to float64) {
+	distance = p.DistanceFromTarget
+	move := reflect.ValueOf(p.MovementHandler)
+	if !p.IsMoving() || move.Kind() != reflect.Pointer || move.IsNil() {
+		return distance, distance
+	}
+	m := move.Elem()
+	to = m.FieldByName("moveRange").Float()
+	since := max(0, s.CurrentTime-time.Duration(m.FieldByName("lastUpdated").Int())).Seconds()
+	left := to - distance
+	return distance + math.Copysign(min(math.Abs(left), since*m.FieldByName("activeSpeed").Float()), left), to
 }
 
 // Why a spell cannot be cast now, checked before a channel is ended for it. Empty when nothing stands in the way.
@@ -457,11 +487,16 @@ func (f *liveFight) state() map[string]any {
 	s, p := f.sim, f.player
 	cooldowns := make([]float64, len(f.spells)+len(f.moves))
 	costs := make([]float64, len(f.spells)+len(f.moves))
+	usable := make([]bool, len(f.spells)+len(f.moves))
 	for i, spell := range f.spells {
 		cooldowns[i] = secs(spell.TimeToReady(s))
 		if spell.Cost != nil {
 			costs[i] = spell.Cost.GetCurrentCost()
 		}
+		usable[i] = f.usable(spell)
+	}
+	for i, yards := range f.moves {
+		usable[len(f.spells)+i] = p.IsMoving() || p.DistanceFromTarget != yards
 	}
 	state := map[string]any{
 		"time":      secs(s.CurrentTime),
@@ -471,6 +506,7 @@ func (f *liveFight) state() map[string]any {
 		"gcd":       secs(max(0, p.GCD.TimeToReady(s))),
 		"cooldowns": cooldowns,
 		"costs":     costs,
+		"usable":    usable,
 		"auras":     append(auras(s, &p.Unit), shamanAuras(s, p)...),
 	}
 	if p.IsCasting(s) {
@@ -513,8 +549,14 @@ func (f *liveFight) state() map[string]any {
 		state["combo"] = p.ComboPoints()
 	}
 	if len(f.moves) > 0 {
-		state["distance"] = p.DistanceFromTarget
+		distance, to := walked(s, p)
+		state["distance"] = distance
 		state["moving"] = p.IsMoving()
+		if p.IsMoving() {
+			state["movingTo"] = to
+		}
+		state["meleeRange"] = core.MaxMeleeAttackDistance
+		state["rangedRange"] = core.MinRangedAttackDistance
 	}
 	state["damageTaken"] = s.Encounter.DamageTaken
 	state["health"] = s.Encounter.EndFightAtHealth

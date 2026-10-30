@@ -169,3 +169,31 @@ describe.skipIf(!simBuilt)('setup switches', () => {
     }
   });
 });
+
+describe.skipIf(!simBuilt)('a hunter weaving melee', () => {
+  it('walks at running speed, can turn around, and sees which spells reach from where they stand', async () => {
+    await loadSim();
+    const api = liveApi(globalThis as unknown as LiveEngine);
+    const spec = SPECS.find((s) => s.key === 'survival-weave-hunter')!;
+    const profile = withOptions(profiles(spec.key)[spec.defaultRace], ALL_ON);
+    const start = api.start(buildLiveRequest(profile, 1, { kind: 'time', seconds: 30 }, profile.player.rotation, spec.startBuffs), 1);
+    const index = (key: string) => start.spells.find((s) => s.key === key)!.index;
+    let state = start.state;
+    for (let t = 0.1; state.cast || t < 0.2; t += 0.1) state = api.advance(t).state;
+    const t0 = state.time;
+    expect(state.distance).toBe(12);
+    expect(state.usable[index('spell:14266')]).toBe(false); // Raptor Strike, out of reach
+    expect(state.usable[index('spell:14287')]).toBe(true); // Arcane Shot
+    expect(api.cast(index('move:5'), 0).ok).toBe(true);
+    state = api.advance(t0 + 0.5).state;
+    expect(state.distance).toBeCloseTo(12 - 0.5 * 7, 0); // 7 yards a second
+    expect(state.movingTo).toBe(5);
+    expect(api.cast(index('move:12'), 0).ok).toBe(true); // turning back while walking
+    state = api.advance(t0 + 2).state;
+    expect(state.distance).toBe(12);
+    api.cast(index('move:5'), 0);
+    state = api.advance(t0 + 4).state;
+    expect(state.distance).toBe(5);
+    expect(state.usable[index('spell:14287')]).toBe(false); // Arcane Shot, too close
+  });
+});
