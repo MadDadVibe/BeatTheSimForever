@@ -77,3 +77,22 @@ describe.skipIf(!simBuilt)('start buffs', () => {
     expect(state.mana).toBeGreaterThan(0.9 * state.maxMana);
   });
 });
+
+describe.skipIf(!simBuilt)('consumables switched off', () => {
+  it('leaves potions, runes and explosives out of the fight and the sim', async () => {
+    const sim = await loadSim();
+    const base = profiles('fury-warrior').orc;
+    const consumes = { ...(base.player.consumes as Record<string, unknown>) };
+    for (const k of ['defaultPotion', 'defaultConjured', 'fillerExplosive', 'sapperExplosive']) delete consumes[k];
+    const off = { ...base, player: { ...base.player, consumes } };
+    const api = liveApi(globalThis as unknown as LiveEngine);
+    const keys = (p: typeof base) => new Set(api.start(buildLiveRequest(p, 1, { kind: 'time', seconds: 30 }), 1).spells.map((s) => s.key));
+    const items = (set: Set<string>) => [...set].filter((k) => k.startsWith('item:'));
+    expect(items(keys(base)).length).toBeGreaterThan(0);
+    expect(items(keys(off))).toEqual([]);
+    const job = { targets: 1, fight: { kind: 'time' as const, seconds: 60 }, iterations: 100, seed: 1 };
+    const casts = (p: typeof base) => runJob(sim, { profile: p, ...job }).spells.filter((s) => s.key.startsWith('item:') && s.castsPerFight > 0).length;
+    expect(casts(base)).toBeGreaterThan(0);
+    expect(casts(off)).toBe(0);
+  });
+});

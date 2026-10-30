@@ -57,13 +57,23 @@ function syncFightFields() {
   form.querySelectorAll<HTMLElement>('[data-for]').forEach((el) => (el.hidden = el.dataset.for !== kind));
 }
 
+/** The setup's consumable switches and the profile's consumes each one stands for. */
+const CONSUMABLES: Record<string, string[]> = {
+  potions: ['defaultPotion'],
+  conjured: ['defaultConjured'],
+  explosives: ['fillerExplosive', 'sapperExplosive'],
+};
+
 function readSetup(): FightSetup {
   const fight: FightSpec = field<HTMLSelectElement>('fight').value === 'time'
     ? { kind: 'time', seconds: Number(field<HTMLInputElement>('seconds').value) }
     : { kind: 'health', healthPerTarget: Number(field<HTMLInputElement>('health').value) };
   // The sim's profiles count on the Tier 1 set bonuses; without the set they are switched off, for you and the sim.
   const base = profiles[field<HTMLSelectElement>('race').value];
-  const profile = { ...base, player: { ...base.player, foreverTier1Bonuses: field<HTMLInputElement>('tier1').checked } };
+  // Consumables that are switched off are taken out of the profile, so neither you nor the sim has them.
+  const consumes = { ...(base.player.consumes as Record<string, unknown> | undefined) };
+  for (const [name, keys] of Object.entries(CONSUMABLES)) if (!field<HTMLInputElement>(name).checked) keys.forEach((k) => delete consumes[k]);
+  const profile = { ...base, player: { ...base.player, consumes, foreverTier1Bonuses: field<HTMLInputElement>('tier1').checked } };
   return {
     spec: currentSpec(),
     profile,
@@ -130,6 +140,15 @@ try {
 field<HTMLInputElement>('tier1').addEventListener('change', () => {
   try { localStorage.setItem('tier1', field<HTMLInputElement>('tier1').checked ? '1' : '0'); } catch { /* not remembered */ }
 });
+for (const name of Object.keys(CONSUMABLES)) {
+  const box = field<HTMLInputElement>(name);
+  try {
+    box.checked = localStorage.getItem(name) !== '0';
+  } catch { /* on */ }
+  box.addEventListener('change', () => {
+    try { localStorage.setItem(name, box.checked ? '1' : '0'); } catch { /* not remembered */ }
+  });
+}
 field<HTMLInputElement>('hints').addEventListener('change', () => {
   try { localStorage.setItem('hints', field<HTMLInputElement>('hints').checked ? '1' : '0'); } catch { /* not remembered */ }
 });
