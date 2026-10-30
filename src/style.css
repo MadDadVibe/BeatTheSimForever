@@ -281,8 +281,8 @@ ol.prio, ol.dmg { list-style: none; margin: 0; padding: 0; display: grid; gap: 4
   .resources { grid-column: 1; grid-row: 5; }
 }
 
-/* A phone held upright: the spells come first. Taller buttons with less space between them; the boss picture and the
-   list/meter panel give up the room for them. */
+/* A phone held upright: the spells come first. Taller buttons with less space between them and a small boss picture.
+   From the top: the list/meter panel (all the room that is left), the bosses, you, your spells, your mana. */
 @media (max-width: 600px) and (orientation: portrait) {
   main.in-fight { padding-left: 4px; padding-right: 4px; }
   .action-bar { gap: 4px; }
@@ -291,7 +291,14 @@ ol.prio, ol.dmg { list-style: none; margin: 0; padding: 0; display: grid; gap: 4
   .action .hotkey { font-size: 0.65rem; }
   .boss-art { height: 34px; }
   .boss { min-height: 0; padding: 6px 8px; gap: 4px; }
-  .side { flex: 0 1 auto; max-height: 22vh; min-height: 64px; }
+  .boss .auras { gap: 2px; min-height: 0; }
+  .bosses[style*='--n:3'] .boss { padding: 6px 4px; }
+  .bosses[style*='--n:3'] .boss .aura { width: 27px; height: 27px; }
+  .side { order: 1; flex: 1 1 0; min-height: 64px; }
+  .bosses { order: 2; }
+  .prep, .me { order: 3; margin-top: 0; }
+  .action-bar { order: 4; }
+  .resources { order: 5; }
   .resources .bar { height: 16px; }
   .resources .bar > em { line-height: 16px; }
 }

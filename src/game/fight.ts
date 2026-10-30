@@ -61,7 +61,7 @@ interface Button { key: string; short: string; spell: LiveSpell; hotkey: string;
 
 type Phase = 'prep' | 'fight';
 
-/** A phone held upright: in the fight its action bar leaves out columns with no spell (desktop keeps them all). */
+/** A phone held upright: in the fight its action bar leaves out columns and rows with no spell (desktop keeps all). */
 const COMPACT_BAR = matchMedia('(max-width: 600px) and (orientation: portrait)');
 type Tab = 'prio' | 'meter';
 
@@ -234,11 +234,12 @@ class FightScreen {
     this.buttons = [];
     this.places = [];
     this.queued = null;
-    const rows = Math.max(1, Math.ceil(this.slots.length / ROW_LENGTH));
-    // On a phone held upright, once the fight is on, a column whose places are all empty makes room for the others.
-    const all = Array.from({ length: ROW_LENGTH }, (_, c) => c);
-    const used = all.filter((c) => this.slots.some((s, i) => i % ROW_LENGTH === c && s.key));
-    const cols = this.phase === 'fight' && COMPACT_BAR.matches && used.length ? used : all;
+    // On a phone held upright, once the fight is on, a column (or a row) whose places are all empty makes room for the
+    // others.
+    const compact = this.phase === 'fight' && COMPACT_BAR.matches && this.slots.some((s) => s.key);
+    const range = (n: number) => Array.from({ length: n }, (_, k) => k);
+    const cols = range(ROW_LENGTH).filter((c) => !compact || this.slots.some((s, i) => i % ROW_LENGTH === c && s.key));
+    const rows = range(Math.ceil(this.slots.length / ROW_LENGTH)).filter((r) => !compact || this.slots.some((s, i) => Math.floor(i / ROW_LENGTH) === r && s.key));
     this.el.bar.style.gridTemplateColumns = `repeat(${cols.length}, minmax(0, 1fr))`;
     this.slots.forEach((slot, i) => {
       const spell = this.spells.find((s) => s.key === slot.key);
@@ -247,9 +248,9 @@ class FightScreen {
       el.className = spell ? 'action' : 'action empty';
       el.dataset.slot = String(i);
       // The first row is the bottom one; each further row goes on top.
-      el.style.gridRow = String(rows - Math.floor(i / ROW_LENGTH));
+      el.style.gridRow = String(rows.length - rows.indexOf(Math.floor(i / ROW_LENGTH)));
       el.style.gridColumn = String(cols.indexOf(i % ROW_LENGTH) + 1);
-      el.hidden = !cols.includes(i % ROW_LENGTH);
+      el.hidden = !cols.includes(i % ROW_LENGTH) || !rows.includes(Math.floor(i / ROW_LENGTH));
       el.classList.toggle('pointed', this.pointed === i);
       this.el.bar.appendChild(el);
       this.places.push(el);
