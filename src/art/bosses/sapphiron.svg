@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120">
+  <!-- A frost wyrm with icy bones, wings spread, puffing cold breath. Our own drawing. -->
+  <defs>
+    <radialGradient id="cold" cx="50%" cy="45%" r="60%">
+      <stop offset="0" stop-color="#8fd8ff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#3a7bd5" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ice" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e8f7ff"/>
+      <stop offset="1" stop-color="#8cc4ee"/>
+    </linearGradient>
+    <linearGradient id="wing" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5aa6e8" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#2a5aa8" stop-opacity="0.55"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="120" fill="url(#cold)"/>
+  <!-- wings: bones with a thin icy skin -->
+  <path d="M70 62 L20 14 L26 40 L8 36 L22 58 L4 62 L30 74 Z" fill="url(#wing)"/>
+  <path d="M90 62 L140 14 L134 40 L152 36 L138 58 L156 62 L130 74 Z" fill="url(#wing)"/>
+  <path d="M70 62 L20 14 M60 66 L8 36 M56 70 L4 62" stroke="#e8f7ff" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+  <path d="M90 62 L140 14 M100 66 L152 36 M104 70 L156 62" stroke="#e8f7ff" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+  <!-- tail -->
+  <path d="M96 100 C120 104 136 96 146 84 C140 98 124 112 100 110 Z" fill="url(#ice)"/>
+  <path d="M146 84 L154 76 L150 90 Z" fill="#cfeeff"/>
+  <!-- body with ribs -->
+  <ellipse cx="80" cy="88" rx="26" ry="22" fill="url(#ice)"/>
+  <path d="M64 80 C72 84 88 84 96 80 M62 88 C72 92 88 92 98 88 M64 96 C72 100 88 100 96 96" stroke="#6aa8d8" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- legs -->
+  <path d="M60 100 L54 114 L64 112 L66 104 Z M100 100 L106 114 L96 112 L94 104 Z" fill="#a9d6f5"/>
+  <!-- neck and head -->
+  <path d="M72 70 C70 58 72 50 78 44 L86 46 C90 54 90 62 88 70 Z" fill="url(#ice)"/>
+  <path d="M60 36 C60 24 72 18 82 20 C96 22 104 30 102 40 C100 48 92 52 80 52 C68 52 60 46 60 36 Z" fill="url(#ice)"/>
+  <!-- icy horns and spikes -->
+  <path d="M66 26 L56 8 L72 22 Z M94 24 L106 6 L98 26 Z M80 20 L82 8 L86 20 Z" fill="#cfeeff" stroke="#8cc4ee" stroke-width="1"/>
+  <!-- snout -->
+  <path d="M96 38 C108 36 118 40 120 46 C114 50 104 50 96 48 Z" fill="#d6efff"/>
+  <circle cx="114" cy="42" r="1.4" fill="#2a5aa8"/>
+  <!-- big round eyes, a bit grumpy -->
+  <circle cx="74" cy="34" r="7" fill="#fff"/>
+  <circle cx="90" cy="33" r="7" fill="#fff"/>
+  <circle cx="76" cy="35" r="3.6" fill="#1f6fd6"/>
+  <circle cx="92" cy="34" r="3.6" fill="#1f6fd6"/>
+  <circle cx="77" cy="34" r="1.2" fill="#fff"/>
+  <circle cx="93" cy="33" r="1.2" fill="#fff"/>
+  <path d="M66 26 L80 29 M98 25 L86 28" stroke="#2a5aa8" stroke-width="2.4" stroke-linecap="round"/>
+  <!-- teeth -->
+  <path d="M100 48 L102 52 L104 48 L106 52 L108 48" stroke="#ffffff" stroke-width="1.4" fill="none"/>
+  <!-- frost breath -->
+  <g fill="#e8f7ff" opacity="0.85">
+    <circle cx="128" cy="48" r="6"/>
+    <circle cx="138" cy="44" r="5"/>
+    <circle cx="146" cy="50" r="4"/>
+    <circle cx="136" cy="54" r="4"/>
+  </g>
+  <!-- snowflakes -->
+  <g stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" opacity="0.9">
+    <path d="M24 92 l0 10 M19 97 l10 0 M20.5 93.5 l7 7 M27.5 93.5 l-7 7"/>
+    <path d="M136 104 l0 8 M132 108 l8 0"/>
+    <path d="M44 8 l0 8 M40 12 l8 0"/>
+    <path d="M120 10 l0 6 M117 13 l6 0"/>
+  </g>
+</svg>

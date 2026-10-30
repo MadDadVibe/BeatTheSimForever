@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120">
+  <!-- A winged blood serpent with a golden mask and feathered wings. Our own drawing. -->
+  <defs>
+    <radialGradient id="blood" cx="50%" cy="45%" r="60%">
+      <stop offset="0" stop-color="#e2384a" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#7a1022" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="scales" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d23a3a"/>
+      <stop offset="1" stop-color="#7a1424"/>
+    </linearGradient>
+    <linearGradient id="feather" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffb347"/>
+      <stop offset="0.5" stop-color="#e2384a"/>
+      <stop offset="1" stop-color="#2f9e6a"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="120" fill="url(#blood)"/>
+  <!-- feathered wings -->
+  <g fill="url(#feather)" stroke="#5a0f1c" stroke-width="1">
+    <path d="M66 50 C50 30 30 22 8 24 C18 30 22 34 22 38 C14 38 8 42 4 48 C16 48 22 50 24 54 C16 56 12 60 10 66 C28 62 46 62 64 64 Z"/>
+    <path d="M94 50 C110 30 130 22 152 24 C142 30 138 34 138 38 C146 38 152 42 156 48 C144 48 138 50 136 54 C144 56 148 60 150 66 C132 62 114 62 96 64 Z"/>
+  </g>
+  <!-- coiled serpent body -->
+  <path d="M40 106 C40 90 60 84 80 86 C104 88 122 94 120 106 C118 116 96 118 80 116 C62 114 52 112 56 104 C60 98 76 100 92 102 C104 104 108 100 102 96" fill="none" stroke="url(#scales)" stroke-width="13" stroke-linecap="round"/>
+  <path d="M46 104 C50 96 62 92 74 92 M90 108 C98 110 108 108 112 104" stroke="#ffcf5a" stroke-width="2" fill="none" stroke-dasharray="3 4" stroke-linecap="round"/>
+  <!-- neck -->
+  <path d="M84 90 C92 78 92 64 84 56 L76 56 C70 66 72 80 78 90 Z" fill="url(#scales)"/>
+  <path d="M80 60 L80 86" stroke="#ffcf5a" stroke-width="2" stroke-dasharray="3 4" stroke-linecap="round"/>
+  <!-- head -->
+  <path d="M58 40 C58 26 70 20 80 20 C90 20 102 26 102 40 C102 52 92 60 80 60 C68 60 58 52 58 40 Z" fill="url(#scales)"/>
+  <!-- golden headdress -->
+  <path d="M60 30 C66 16 94 16 100 30 L96 32 C90 24 70 24 64 32 Z" fill="#f2c24a" stroke="#9a6a14" stroke-width="1"/>
+  <g fill="#2f9e6a" stroke="#1d5e40" stroke-width="1">
+    <path d="M68 22 L62 4 L72 18 Z"/>
+    <path d="M80 18 L80 0 L84 18 Z"/>
+    <path d="M92 22 L98 4 L88 18 Z"/>
+  </g>
+  <circle cx="80" cy="24" r="3" fill="#3fd6ff" stroke="#9a6a14" stroke-width="1"/>
+  <!-- eyes: sly and glowing -->
+  <path d="M66 38 C70 34 76 36 76 40 C72 42 68 41 66 38 Z" fill="#ffe14a"/>
+  <path d="M94 38 C90 34 84 36 84 40 C88 42 92 41 94 38 Z" fill="#ffe14a"/>
+  <path d="M71 37 L71 41 M89 37 L89 41" stroke="#3a0810" stroke-width="1.6" stroke-linecap="round"/>
+  <!-- grin with fangs and a forked tongue -->
+  <path d="M68 48 C74 54 86 54 92 48" stroke="#3a0810" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M72 50 L74 56 L76 51 M88 50 L86 56 L84 51" fill="#ffffff"/>
+  <path d="M80 53 L80 62 L77 66 M80 62 L83 66" stroke="#ff6f9a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <!-- drops of blood -->
+  <g fill="#e2384a">
+    <path d="M22 86 C22 82 26 78 26 78 C26 78 30 82 30 86 C30 89 28 90 26 90 C24 90 22 89 22 86 Z"/>
+    <path d="M134 82 C134 79 137 76 137 76 C137 76 140 79 140 82 C140 84 138.5 85 137 85 C135.5 85 134 84 134 82 Z"/>
+  </g>
+</svg>
