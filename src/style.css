@@ -141,7 +141,7 @@ body:has(.in-fight) { overscroll-behavior: none; }
 .aura.missing { opacity: 0.35; outline: 2px dashed var(--bad); outline-offset: -2px; }
 .me { margin-top: 0; }
 @media (max-height: 560px) and (orientation: landscape) {
-  .fight { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto 1fr auto; column-gap: 12px; }
+  .fight { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto 1fr auto auto; column-gap: 12px; }
   .fight-top, .bosses { grid-column: 1 / -1; }
   .focus { grid-column: 1; }
   .me { grid-column: 1; }
@@ -163,7 +163,7 @@ label.check input { min-height: 0; width: 20px; height: 20px; }
 .toggle[aria-pressed='true'] { color: var(--bg); background: var(--warn); border-color: var(--warn); font-weight: 700; }
 .prep { display: none; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
 .prepping .prep { display: flex; }
-.prepping .focus, .prepping .me, .prepping .meter { display: none; }
+.prepping .focus, .prepping .me, .prepping .resources, .prepping .meter { display: none; }
 .fight.prepping { height: calc(100dvh - 16px); min-height: 0; }
 .sheet { flex: 1; min-height: 0; overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 4px 12px 12px; }
 .sheet-title { font-size: 1rem; margin: 10px 0 6px; }
@@ -243,7 +243,7 @@ ol.prio, ol.dmg { list-style: none; margin: 0; padding: 0; display: grid; gap: 4
 /* A wide screen: the list and the meter both, in a column beside the fight */
 @media (min-width: 1000px) and (min-height: 561px) {
   main.in-fight { max-width: 1240px; }
-  .fight { display: grid; grid-template-columns: minmax(0, 1fr) 340px; grid-template-rows: auto auto 1fr auto auto; column-gap: 12px; }
+  .fight { display: grid; grid-template-columns: minmax(0, 1fr) 340px; grid-template-rows: auto auto 1fr auto auto auto; column-gap: 12px; }
   .fight > :not(.side) { grid-column: 1; }
   .side { grid-column: 2; grid-row: 1 / -1; min-height: 0; }
   .prepping .side { display: flex; }
@@ -265,3 +265,26 @@ ol.prio, ol.dmg { list-style: none; margin: 0; padding: 0; display: grid; gap: 4
 /* An empty place on the bar: only its key, and only visible as a place */
 .action.empty { background: transparent; border-style: dashed; opacity: 0.55; }
 .fight:not(.prepping) .action.empty { opacity: 0.25; pointer-events: none; }
+
+/* Your mana (rage, energy) under the action bar */
+.resources { display: flex; flex-direction: column; gap: 6px; }
+@media (max-height: 560px) and (orientation: landscape) {
+  .resources { grid-column: 1; grid-row: 5; }
+}
+
+/* A phone held upright: the spells come first. Taller buttons with less space between them; the boss picture and the
+   list/meter panel give up the room for them. */
+@media (max-width: 600px) and (orientation: portrait) {
+  main.in-fight { padding-left: 4px; padding-right: 4px; }
+  .action-bar { gap: 4px; }
+  .action { aspect-ratio: auto; height: clamp(54px, 9vh, 80px); border-radius: 10px; }
+  .action .short { font-size: 0.75rem; }
+  .action .hotkey { font-size: 0.65rem; }
+  .boss-art { height: 34px; }
+  .boss { min-height: 0; padding: 6px 8px; gap: 4px; }
+  .side { flex: 0 1 auto; max-height: 22vh; min-height: 64px; }
+  .fight:not(.prepping) .focus { flex: 1 1 auto; min-height: auto; gap: 4px; }
+  .auras.big .aura { width: 48px; height: 48px; }
+  .resources .bar { height: 16px; }
+  .resources .bar > em { line-height: 16px; }
+}

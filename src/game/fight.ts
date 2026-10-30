@@ -10,8 +10,9 @@ import { escapeHtml, iconUrl, label } from './names';
 import { priorityEntries, priorityHtml } from './priority';
 import { fillSheet, sheetSkeleton } from './sheet';
 
-// The fight screen: bosses at the top, you in the middle, your action bar at the bottom. The engine runs the fight;
-// this screen moves its clock along with the real one, sends your button presses and shows what it reports.
+// The fight screen: bosses at the top, you in the middle, your action bar at the bottom and your mana (rage, energy)
+// under it. The engine runs the fight; this screen moves its clock along with the real one, sends your button presses
+// and shows what it reports.
 // Before the fight it is a preparation screen: your character sheet, and an action bar you can rearrange (drag a
 // spell onto another to swap them) and rebind (point at a spell and press a key). The countdown starts when you are
 // ready (space bar or the button). Beside the fight (on a phone: between the boss and you) are the sim's priority list,
@@ -189,12 +190,14 @@ class FightScreen {
           <div class="countdown" data-el="countdown"></div>
           <div class="auras player-auras" data-el="playerAuras"></div>
           <div class="bar cast-bar" data-el="castBar"><span data-el="castFill"></span><em data-el="castText"></em></div>
-          ${spec.resources.map((r) => r === 'combo'
-            ? '<div class="combo" data-el="combo">' + '<i></i>'.repeat(5) + '</div>'
-            : `<div class="bar ${r}-bar"><span data-el="${r}Fill"></span><em data-el="${r}Text"></em></div>`).join('')}
           <div class="flash" data-el="flash" aria-live="polite"></div>
         </section>
         <nav class="action-bar" data-el="bar"></nav>
+        <section class="resources">
+          ${spec.resources.map((r) => r === 'combo'
+            ? '<div class="combo" data-el="combo">' + '<i></i>'.repeat(5) + '</div>'
+            : `<div class="bar ${r}-bar"><span data-el="${r}Fill"></span><em data-el="${r}Text"></em></div>`).join('')}
+        </section>
       </div>`;
     this.root.querySelectorAll<HTMLElement>('[data-el]').forEach((el) => (this.el[el.dataset.el!] = el));
     void fillSheet(this.el.sheet, spec, profile);
