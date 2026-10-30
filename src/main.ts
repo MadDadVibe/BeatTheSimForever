@@ -60,8 +60,14 @@ function syncFightFields() {
   form.querySelectorAll<HTMLElement>('[data-for]').forEach((el) => (el.hidden = el.dataset.for !== kind));
 }
 
-/** The setup's switches that change the profile, each on unless switched off. */
-const SWITCHES = [...Object.keys(CONSUMABLES), 'raidBuffs', 'raidDebuffs'] as const;
+/** The setup's switches and whether each is on until you change it: the raid on, consumables and helpers off. */
+const SWITCHES: Record<string, boolean> = {
+  ...Object.fromEntries(Object.keys(CONSUMABLES).map((k) => [k, false])),
+  raidBuffs: true,
+  raidDebuffs: true,
+  channelClipping: false,
+  hints: false,
+};
 const on = (name: string) => field<HTMLInputElement>(name).checked;
 
 function readSetup(): FightSetup {
@@ -83,7 +89,8 @@ function readSetup(): FightSetup {
     fight,
     countdown: 5,
     rotation: currentSpec().defaultRotation ?? profile.player.rotation!,
-    hints: field<HTMLInputElement>('hints').checked,
+    hints: on('hints'),
+    channelClipping: on('channelClipping'),
   };
 }
 
@@ -124,20 +131,18 @@ function readHints(): boolean {
     return false;
   }
 }
-field<HTMLInputElement>('hints').checked = readHints();
-for (const name of SWITCHES) {
+for (const [name, byDefault] of Object.entries(SWITCHES)) {
   const box = field<HTMLInputElement>(name);
+  box.checked = byDefault;
   try {
-    box.checked = localStorage.getItem(name) !== '0';
-  } catch { /* on */ }
+    const stored = localStorage.getItem(name);
+    if (stored !== null) box.checked = stored === '1';
+  } catch { /* the default */ }
   box.addEventListener('change', () => {
     try { localStorage.setItem(name, box.checked ? '1' : '0'); } catch { /* not remembered */ }
   });
 }
 field<HTMLSelectElement>('imbue').addEventListener('change', () => remember('imbue', field<HTMLSelectElement>('imbue').value));
-field<HTMLInputElement>('hints').addEventListener('change', () => {
-  try { localStorage.setItem('hints', field<HTMLInputElement>('hints').checked ? '1' : '0'); } catch { /* not remembered */ }
-});
 
 const lastSpec = SPECS.find((s) => s.key === remember('spec')) ?? SPECS.find((s) => s.key === 'shadow-priest')!;
 field<HTMLSelectElement>('class').innerHTML = CLASSES.map((c) => `<option value="${c.key}">${c.name}</option>`).join('');

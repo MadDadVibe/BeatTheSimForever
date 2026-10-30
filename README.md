@@ -9,7 +9,7 @@ the sim's gear, talents and rotation for each.
 ## Playing
 
 Pick a class, spec and race, one to three bosses and a fight (a set time, or until the bosses are dead), and whether
-potions, Demonic Runes or Thistle Tea, explosives, the raid's buffs and the raid's debuffs on the bosses are there (for
+potions, Demonic Runes or Thistle Tea and explosives (off at first), the raid's buffs and its debuffs on the bosses (on at first) are there (for
 you and the sim alike; an enhancement shaman also picks a weapon imbue). Lasting buffs of your own (Shadowform, aspects,
 a shaman's totems) are up from the start. The Tier 1 set bonuses are always off, since the sim's values for them are
 placeholders. Before the fight you see
@@ -19,8 +19,8 @@ remembered in this browser. Press the space bar or "Bereit" to start a 5-second 
 
 In the fight, tap the buttons or use your keys. Tap a boss (or press Tab or F1 to F3) to aim at it. The hint, which
 you can switch on and off, lights up the spell the sim's rotation would cast next. A spell pressed shortly before the global cooldown or a cast ends
-goes off right after it, and a new spell during a channel (Mind Flay, say)
-clips it. Rage, energy and combo points get their own bars, pets fight on their own, and a hunter who weaves melee
+goes off right after it. A new spell during a channel (Mind Flay, say) clips it only with the
+"Channel Clipping" switch on; otherwise it waits until the channel is through. Rage, energy and combo points get their own bars, pets fight on their own, and a hunter who weaves melee
 between shots has a button for each distance.
 
 After the fight the sim plays the same fight a thousand times. The results show your DPS against the sim's, what cost

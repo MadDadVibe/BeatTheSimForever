@@ -25,6 +25,8 @@ export interface FightSetup {
   rotation: AplRotation;
   /** Show that hint on the action bar. */
   hints: boolean;
+  /** A spell pressed during a channel ends it (clips it); otherwise it waits until the channel has run its course. */
+  channelClipping: boolean;
 }
 
 export interface FightLog {
@@ -346,17 +348,22 @@ class FightScreen {
   }
 
   private async cast(b: Button) {
-    const r = await live.cast(b.spell.index, this.target);
+    // Without clipping a channel runs its course: the spell waits like one pressed during a cast.
+    const r = !this.setup.channelClipping && this.state.channel && this.state.channel.ends > this.state.time
+      ? { ok: false, reason: 'casting' as const, logs: '', state: this.state }
+      : await live.cast(b.spell.index, this.target);
     this.apply(r.logs, r.state);
     if (r.ok) { this.queued = null; return; }
     if ((r.reason === 'gcd' || r.reason === 'casting') && this.waitFor() <= QUEUE_WINDOW) this.queued = b;
+    else if (r.reason === 'casting') this.showFlash('Der Channel läuft noch');
     else this.showFlash(BLOCK_TEXT[r.reason || 'cannot']);
   }
 
-  /** Seconds until the global cooldown and any cast are over. */
+  /** Seconds until the global cooldown and any cast (and, without clipping, any channel) are over. */
   private waitFor(): number {
     const s = this.state;
-    return Math.max(s.gcd, s.cast ? s.cast.ends - s.time : 0);
+    const channel = s.channel && !this.setup.channelClipping ? s.channel.ends - s.time : 0;
+    return Math.max(s.gcd, s.cast ? s.cast.ends - s.time : 0, channel);
   }
 
   private async castQueued() {
