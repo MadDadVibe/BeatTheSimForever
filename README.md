@@ -8,7 +8,8 @@ the sim's gear, talents and rotation for each.
 
 ## Playing
 
-Pick a race, one to three bosses and a fight (a set time, or until the bosses are dead). Before the fight you see
+Pick a class, spec and race, one to three bosses and a fight (a set time, or until the bosses are dead), and whether
+potions, Demonic Runes or Thistle Tea and explosives are used (by you and the sim alike). Before the fight you see
 the character the sim plays (talents, stats with gear and buffs, gear, consumables) and can rearrange your action bar:
 drag a spell onto another to swap them, point at a spell and press a key to bind it (Backspace clears it). Your bar is
 remembered in this browser. Press the space bar or "Bereit" to start a 5-second countdown in which you may precast.
