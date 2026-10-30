@@ -6,6 +6,11 @@
   "resources": [
     "mana"
   ],
+  "startBuffs": [
+    "spell:10442",
+    "spell:10614",
+    "spell:10497"
+  ],
   "bar": [
     {
       "key": "spell:10438",
@@ -58,12 +63,31 @@
     {
       "key": "item:15993",
       "short": "Nade"
+    },
+    {
+      "key": "spell:10442",
+      "short": "SoE"
+    },
+    {
+      "key": "spell:10614",
+      "short": "WF"
+    },
+    {
+      "key": "spell:10497",
+      "short": "MST"
     }
   ],
   "targetAuras": [
     "spell:29228"
   ],
   "playerAuras": [
+    "spell:10442",
+    "spell:10614",
+    "spell:10497",
+    "spell:16362",
+    "spell:16342",
+    "spell:16316",
+    "spell:16356",
     "spell:16246",
     "spell:408505",
     "spell:10438",

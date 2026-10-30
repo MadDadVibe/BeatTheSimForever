@@ -16,6 +16,7 @@ import (
 	"github.com/wowsims/classic/sim/core"
 	"github.com/wowsims/classic/sim/core/proto"
 	"github.com/wowsims/classic/sim/core/simsignals"
+	"github.com/wowsims/classic/sim/shaman"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -396,6 +397,42 @@ func auras(s *core.Simulation, u *core.Unit) []auraState {
 	return out
 }
 
+// The weapon imbues by the label of their aura (which has no spell) and the spell that puts each one on.
+var imbueSpells = map[string]int32{
+	"Windfury Imbue":    16362,
+	"Flametongue Imbue": 16342,
+	"Frostbrand Imbue":  16356,
+	"Rockbiter Imbue":   16316,
+}
+
+// shamanAuras shows a shaman's totems that stand (one of each element) and weapon imbues as effects on them, by the
+// spell that placed each one. A totem whose buff is also up some other way is left to that buff.
+func shamanAuras(s *core.Simulation, p *core.Character) []auraState {
+	agent, ok := s.Raid.GetPlayerFromUnit(&p.Unit).(shaman.ShamanAgent)
+	if !ok {
+		return nil
+	}
+	sh := agent.GetShaman()
+	out := []auraState{}
+	for _, a := range p.GetAuras() {
+		if id, ok := imbueSpells[a.Label]; ok && a.IsActive() {
+			out = append(out, auraState{Key: key(core.ActionID{SpellID: id}), Label: a.Label, Remaining: -1, Duration: -1})
+		}
+	}
+	for i, spell := range sh.ActiveTotems {
+		if spell == nil || sh.TotemExpirations[i] <= s.CurrentTime {
+			continue
+		}
+		k := key(spell.ActionID.WithTag(0))
+		if a := p.GetAuraByID(core.ActionID{SpellID: spell.ActionID.SpellID}); a != nil && a.IsActive() {
+			continue
+		}
+		left := sh.TotemExpirations[i] - s.CurrentTime
+		out = append(out, auraState{Key: k, Label: "Totem", Remaining: secs(left), Duration: secs(left)})
+	}
+	return out
+}
+
 func (f *liveFight) state() map[string]any {
 	s, p := f.sim, f.player
 	cooldowns := make([]float64, len(f.spells)+len(f.moves))
@@ -414,7 +451,7 @@ func (f *liveFight) state() map[string]any {
 		"gcd":       secs(max(0, p.GCD.TimeToReady(s))),
 		"cooldowns": cooldowns,
 		"costs":     costs,
-		"auras":     auras(s, &p.Unit),
+		"auras":     append(auras(s, &p.Unit), shamanAuras(s, p)...),
 	}
 	if p.IsCasting(s) {
 		state["cast"] = map[string]any{"key": key(p.Hardcast.ActionID), "ends": secs(p.Hardcast.Expires)}
@@ -427,9 +464,16 @@ func (f *liveFight) state() map[string]any {
 			"tick":  secs(dot.TickPeriod()),
 		}
 	}
+	// A debuff the raid keeps up for good that is also one of your spells (the raid's Insect Swarm on a balance druid)
+	// is left out: what you see on a boss is what you put there.
+	own := map[string]bool{}
+	for _, spell := range f.spells {
+		own[key(spell.ActionID.WithTag(0))] = true
+	}
 	targets := []targetState{}
 	for _, t := range s.Encounter.TargetUnits {
-		targets = append(targets, targetState{Auras: auras(s, t)})
+		list := slices.DeleteFunc(auras(s, t), func(a auraState) bool { return a.Remaining < 0 && own[a.Key] })
+		targets = append(targets, targetState{Auras: list})
 	}
 	state["targets"] = targets
 	if hint := f.hint(); hint != "" {
