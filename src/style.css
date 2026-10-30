@@ -140,17 +140,10 @@ table.compare { width: 100%; border-collapse: collapse; font-size: 0.9rem; margi
 
 /* Fight on a phone */
 body:has(.in-fight) { overscroll-behavior: none; }
-.focus { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; flex: 1; min-height: 90px; }
-.focus-name { color: var(--muted); font-size: 0.85rem; }
-.auras.big { justify-content: center; gap: 10px; }
-.auras.big .aura { width: 60px; height: 60px; border-radius: 10px; }
-.auras.big .aura i { font-size: 0.95rem; font-weight: 700; }
 .aura.missing { opacity: 0.35; outline: 2px dashed var(--bad); outline-offset: -2px; }
-.me { margin-top: 0; }
 @media (max-height: 560px) and (orientation: landscape) {
   .fight { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto 1fr auto auto; column-gap: 12px; }
   .fight-top, .bosses { grid-column: 1 / -1; }
-  .focus { grid-column: 1; }
   .me { grid-column: 1; }
   .fight { min-height: calc(100dvh - 16px); gap: 6px; }
   .side { grid-column: 2; grid-row: 3; min-height: 0; }
@@ -159,8 +152,6 @@ body:has(.in-fight) { overscroll-behavior: none; }
   .boss { min-height: 0; padding: 6px 8px; gap: 4px; }
   .auras { min-height: 28px; }
   .aura { width: 28px; height: 28px; }
-  .auras.big .aura { width: 48px; height: 48px; }
-  .focus { min-height: 0; }
 }
 
 /* Preparing for the fight */
@@ -170,7 +161,7 @@ label.check input { min-height: 0; width: 20px; height: 20px; }
 .toggle[aria-pressed='true'] { color: var(--bg); background: var(--warn); border-color: var(--warn); font-weight: 700; }
 .prep { display: none; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
 .prepping .prep { display: flex; }
-.prepping .focus, .prepping .me, .prepping .resources, .prepping .meter { display: none; }
+.prepping .me, .prepping .resources, .prepping .meter { display: none; }
 .fight.prepping { height: calc(100dvh - 16px); min-height: 0; }
 .sheet { flex: 1; min-height: 0; overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 4px 12px 12px; }
 .sheet-title { font-size: 1rem; margin: 10px 0 6px; }
@@ -220,7 +211,6 @@ ul.consumes li::before { content: '• '; color: var(--muted); }
 .panel { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .panel h2 { display: none; font-size: 0.9rem; margin: 2px 4px 6px; color: var(--muted); }
 .side[data-tab='prio'] .meter-panel, .side[data-tab='meter'] .prio-panel { display: none; }
-.fight:not(.prepping) .focus { flex: none; min-height: 0; }
 .fight:not(.prepping) { height: calc(100dvh - 16px); min-height: 0; }
 .prepping .side { display: none; }
 .prio-part .prio { margin-top: 8px; }
@@ -261,7 +251,6 @@ ol.prio, ol.dmg { list-style: none; margin: 0; padding: 0; display: grid; gap: 4
   .prio-panel { flex: 3; }
   .meter-panel { flex: 2; border-top: 1px solid var(--line); padding-top: 6px; }
   .prio-part { display: none; }
-  .focus { flex: 1; }
 }
 
 /* A phone on its side: no room for the pictures */
@@ -297,14 +286,20 @@ ol.prio, ol.dmg { list-style: none; margin: 0; padding: 0; display: grid; gap: 4
 @media (max-width: 600px) and (orientation: portrait) {
   main.in-fight { padding-left: 4px; padding-right: 4px; }
   .action-bar { gap: 4px; }
-  .action { aspect-ratio: auto; height: clamp(54px, 9vh, 80px); border-radius: 10px; }
+  .action { aspect-ratio: auto; height: clamp(54px, 10.5vh, 92px); border-radius: 10px; }
   .action .short { font-size: 0.75rem; }
   .action .hotkey { font-size: 0.65rem; }
   .boss-art { height: 34px; }
   .boss { min-height: 0; padding: 6px 8px; gap: 4px; }
   .side { flex: 0 1 auto; max-height: 22vh; min-height: 64px; }
-  .fight:not(.prepping) .focus { flex: 1 1 auto; min-height: auto; gap: 4px; }
-  .auras.big .aura { width: 48px; height: 48px; }
   .resources .bar { height: 16px; }
   .resources .bar > em { line-height: 16px; }
+}
+
+/* The effects to keep up on a boss sit in its frame */
+.boss .auras { gap: 3px; }
+.boss .aura { width: 30px; height: 30px; }
+@media (min-width: 1000px) and (min-height: 561px) {
+  .boss .aura { width: 38px; height: 38px; }
+  .me { align-self: end; }
 }
