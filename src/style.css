@@ -49,6 +49,7 @@ main.in-fight { max-width: 900px; padding: 8px; padding-bottom: max(8px, env(saf
 .bosses { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 8px; }
 .boss { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 6px; text-align: left; background: var(--panel); color: var(--text); border: 2px solid var(--line); border-radius: 12px; padding: 10px; min-height: 108px; }
 .boss.targeted { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.boss.hinted { border-color: var(--warn); box-shadow: 0 0 0 2px var(--warn); }
 .boss-name { font-weight: 600; font-size: 0.9rem; }
 .bar { position: relative; display: block; height: 18px; background: var(--panel-2); border-radius: 6px; overflow: hidden; }
 .bar > span { position: absolute; inset: 0 auto 0 0; width: 0; }

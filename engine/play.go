@@ -28,6 +28,8 @@ type liveFight struct {
 	player *core.Character
 	logs   strings.Builder
 	spells []*core.Spell // castable spells, by the index the page uses
+	// The boss the hint's spell goes on, when the rotation picks one (a DoT kept up on every boss); -1 otherwise.
+	hintTarget int
 	// Distances the rotation moves to (a hunter weaving melee between shots); each is a button after the spells.
 	moves    []float64
 	rotation *proto.APLRotation // the rotation as configured, for what the parsed one does not tell (see hint)
@@ -356,6 +358,24 @@ func primarySeal(action *core.APLAction) (spell *core.Spell) {
 	return (*core.Spell)(unsafe.Pointer(seal.Pointer()))
 }
 
+// multidotTarget is the boss a ready multi-DoT entry casts on (nil for any other entry). The sim keeps it unexported.
+func multidotTarget(action *core.APLAction) (target *core.Unit) {
+	defer func() {
+		if recover() != nil {
+			target = nil
+		}
+	}()
+	impl := reflect.ValueOf(action).Elem().FieldByName("impl").Elem()
+	if impl.Type() != reflect.TypeOf(&core.APLActionMultidot{}) {
+		return nil
+	}
+	next := impl.Elem().FieldByName("nextTarget")
+	if next.IsNil() {
+		return nil
+	}
+	return (*core.Unit)(unsafe.Pointer(next.Pointer()))
+}
+
 // spellFor is the castable spell with this id.
 func (f *liveFight) spellFor(id *proto.ActionID) *core.Spell {
 	want := core.ProtoToActionID(id)
@@ -478,6 +498,9 @@ func (f *liveFight) state() map[string]any {
 	state["targets"] = targets
 	if hint := f.hint(); hint != "" {
 		state["hint"] = hint
+		if f.hintTarget >= 0 {
+			state["hintTarget"] = f.hintTarget
+		}
 	}
 	// The other resources the character has: rage, energy and combo points (a druid has them all, by form).
 	if p.HasRageBar() {
@@ -502,6 +525,7 @@ func (f *liveFight) state() map[string]any {
 // (a move, an attack on the next swing) comes first. Empty without a rotation or before the pull.
 func (f *liveFight) hint() string {
 	s, p := f.sim, f.player
+	f.hintTarget = -1
 	if p.Rotation == nil || s.CurrentTime < 0 {
 		return ""
 	}
@@ -560,6 +584,7 @@ func (f *liveFight) nextAction() string {
 		}
 		for _, spell := range action.GetAllSpells() {
 			if spell.IsReady(s) && spell.Flags.Matches(core.SpellFlagAPL) {
+				f.hintTarget = slices.Index(s.Encounter.TargetUnits, multidotTarget(action))
 				return key(spell.ActionID)
 			}
 		}

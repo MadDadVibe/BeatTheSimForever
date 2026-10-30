@@ -1,4 +1,4 @@
-import { normalizeApl } from './apl';
+import { normalizeApl, withMultidot } from './apl';
 import type { AplRotation, FightSpec, SimJob, SimProfile } from './types';
 
 const STAT_HEALTH = 34;
@@ -35,7 +35,7 @@ export function buildRequest(job: SimJob, seconds: number): Record<string, unkno
   const { profile } = job;
   const player = structuredClone(profile.player);
   const rotation = job.rotation ?? player.rotation;
-  if (rotation) player.rotation = withStartBuffs(normalizeApl(rotation), job.startBuffs);
+  if (rotation) player.rotation = withStartBuffs(withMultidot(normalizeApl(rotation)), job.startBuffs);
 
   const targetCount = Math.max(1, Math.min(3, Math.round(job.targets)));
   const boss = profile.encounter.targets[0];
@@ -77,7 +77,7 @@ export function buildLiveRequest(profile: SimProfile, targets: number, fight: Fi
     raid: { parties: Array<{ players: Array<Record<string, unknown>> }> };
     encounter: { useHealth?: boolean; targets: Array<{ stats: number[] }> };
   };
-  const { prepullActions: _pre, ...hintOnly } = rotation ? normalizeApl(rotation) : { type: 'TypeAPL', priorityList: [] };
+  const { prepullActions: _pre, ...hintOnly } = rotation ? withMultidot(normalizeApl(rotation)) : { type: 'TypeAPL', priorityList: [] };
   req.raid.parties[0].players[0].rotation = withStartBuffs(hintOnly, startBuffs);
   if (fight.kind === 'health') {
     req.encounter.useHealth = true;

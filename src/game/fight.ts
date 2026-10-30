@@ -405,6 +405,8 @@ class FightScreen {
         text.textContent = `${Math.round(this.damageBy[i]).toLocaleString('de-DE')}`;
       }
       this.root.querySelector(`[data-boss="${i}"]`)!.classList.toggle('targeted', i === this.target);
+      // The hinted spell is a DoT the sim would put on this boss.
+      this.root.querySelector(`[data-boss="${i}"]`)!.classList.toggle('hinted', this.hints && this.setup.targets > 1 && s.hint !== undefined && s.hintTarget === i);
       this.el['bossAuras' + i].innerHTML = auraIcons(spec.targetAuras, s.targets[i]?.auras ?? [], since);
     }
 

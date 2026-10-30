@@ -43,6 +43,8 @@ export interface LiveState {
   damageTaken: number;
   /** The spell the sim's rotation would cast next (when the fight was started with one). */
   hint?: string;
+  /** The boss the hinted spell goes on, when the rotation picks one (a DoT kept up on every boss). */
+  hintTarget?: number;
   /** Only when the rotation moves (a hunter weaving melee between shots): your distance to the boss, in yards. */
   distance?: number;
   moving?: boolean;

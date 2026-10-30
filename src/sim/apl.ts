@@ -34,3 +34,40 @@ export function rotationFromExport(json: unknown): AplRotation {
   if (!rotation || !Array.isArray(rotation.priorityList)) throw new Error('No rotation (priorityList) found in this file');
   return rotation;
 }
+
+type Node = Record<string, any>;
+const MAX_DOTS = 3;
+
+/**
+ * The rotation with its DoTs kept up on every boss. The sim's rotations are written for one boss: they cast a DoT
+ * when it is missing (or about to run out) on the boss in front of you, and so never put it on the others. Each
+ * such entry ("cast X if X's DoT is not up / runs out within t", plus any other conditions) becomes the sim's
+ * multi-DoT action, which casts X on the first boss without it (or with less than t left). With one boss it is the
+ * same rotation. Entries that need combo points (a rogue's Rupture) stay as they are: those sit on one boss.
+ */
+export function withMultidot(rotation: AplRotation): AplRotation {
+  const sameSpell = (a: Node | undefined, id: number) => a?.spellId === id;
+  // The overlap (a value) a condition term asks for on spell id, or null when the term is no DoT check of it.
+  const dotTerm = (term: Node, id: number): Node | null => {
+    if (sameSpell(term.not?.val?.dotIsActive?.spellId, id)) return { const: { val: '0s' } };
+    const cmp = term.cmp;
+    if (cmp && ['OpLe', 'OpLt'].includes(cmp.op) && sameSpell(cmp.lhs?.dotRemainingTime?.spellId, id) && cmp.rhs) return cmp.rhs;
+    return null;
+  };
+  const conjuncts = (c: Node): Node[] => (c.and ? c.and.vals.flatMap(conjuncts) : [c]);
+  const priorityList = (rotation.priorityList ?? []).map((item) => {
+    const entry = item as Node;
+    const { castSpell, condition, ...rest } = entry.action ?? {};
+    const id = castSpell?.spellId?.spellId;
+    if (!id || !condition || JSON.stringify(condition).includes('ComboPoints')) return item;
+    const terms = conjuncts(condition);
+    const at = terms.findIndex((t) => dotTerm(t, id) !== null);
+    if (at < 0) return item;
+    const others = terms.filter((_, i) => i !== at);
+    const multidot = { spellId: castSpell.spellId, maxDots: MAX_DOTS, maxOverlap: dotTerm(terms[at], id) };
+    const action: Node = { ...rest, multidot };
+    if (others.length) action.condition = others.length === 1 ? others[0] : { and: { vals: others } };
+    return { ...entry, action };
+  });
+  return { ...rotation, priorityList };
+}
