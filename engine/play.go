@@ -163,6 +163,11 @@ func playStart(in startIn) (any, error) {
 	s.CurrentTime = start
 	f.logs.Reset()
 	f.player = s.Raid.Parties[0].Players[0].GetCharacter()
+	// The rotation is only asked for the hint; it never acts for you. The sim still runs it on a melee swing that an
+	// attack can replace (Heroic Strike, Raptor Strike, Maul), even in interactive mode, so it is told to wait.
+	if f.player.Rotation != nil {
+		f.player.Rotation.SetPolicy(func(*core.Simulation, []int) int { return -1 })
+	}
 	f.rotation = rsr.Raid.Parties[0].Players[0].Rotation
 	for _, item := range f.rotation.GetPriorityList() {
 		if yards, ok := moveRange(item.GetAction()); ok && !slices.Contains(f.moves, yards) {

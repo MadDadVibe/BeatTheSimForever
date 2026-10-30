@@ -197,3 +197,17 @@ describe.skipIf(!simBuilt)('a hunter weaving melee', () => {
     expect(state.usable[index('spell:14287')]).toBe(false); // Arcane Shot, too close
   });
 });
+
+describe.skipIf(!simBuilt)('nobody presses for you', () => {
+  it.each(SPECS.map((s) => [s.key, s] as const))('%s casts nothing from its bar by itself', async (_key, spec) => {
+    await loadSim();
+    const api = liveApi(globalThis as unknown as LiveEngine);
+    const profile = withOptions(profiles(spec.key)[spec.defaultRace], ALL_ON);
+    api.start(buildLiveRequest(profile, 1, { kind: 'time', seconds: 30 }, spec.defaultRotation ?? profile.player.rotation, spec.startBuffs), 1);
+    let logs = '';
+    for (let t = 0; t < 30; t += 0.5) logs += api.advance(t).logs;
+    const bar = new Set(spec.bar.map((b) => b.key));
+    const pressed = parseTimeline(logs, String(profile.player.name)).flatMap((e) => (e.type === 'cast' && e.t >= 0 && bar.has(e.key) ? [e] : []));
+    expect(pressed.map((e) => e.key)).toEqual([]);
+  });
+});
