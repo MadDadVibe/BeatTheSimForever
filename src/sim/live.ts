@@ -50,6 +50,14 @@ export interface LiveState {
   /** Only when the rotation moves (a hunter weaving melee between shots): your distance to the boss, in yards. */
   distance?: number;
   moving?: boolean;
+  /** Where you are walking to, while you walk. */
+  movingTo?: number;
+  /** Melee attacks reach up to meleeRange yards, shots need at least rangedRange; in between is the dead zone. */
+  meleeRange?: number;
+  rangedRange?: number;
+  /** Whether each spell (by index, moves after the spells) could be cast now, leaving the global cooldown and a cast
+   *  under way aside: its own conditions (the distance it needs), its resource, nothing with a cast time while walking. */
+  usable: boolean[];
   /** All bosses' health together in a health fight; 0 in a timed fight. */
   health: number;
 }

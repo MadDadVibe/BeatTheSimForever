@@ -28,6 +28,7 @@ button { font: inherit; cursor: pointer; }
 
 /* Setup */
 form { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+[hidden] { display: none !important; }
 label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--muted); }
 label.wide { grid-column: 1 / -1; }
 input, select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; min-height: 44px; min-width: 0; }
@@ -261,6 +262,18 @@ ol.prio, ol.dmg { list-style: none; margin: 0; padding: 0; display: grid; gap: 4
   .boss-art { display: none; }
   .side { min-height: 0; }
 }
+
+/* Distance to the boss (a hunter weaving melee between shots): melee range, dead zone, shooting range */
+.range { display: grid; gap: 4px; }
+.range-track { position: relative; height: 14px; border-radius: 7px; overflow: hidden;
+  background: linear-gradient(to right, var(--good) 0 var(--melee), var(--panel-2) var(--melee) var(--ranged), var(--accent) var(--ranged) 100%); }
+.range-track > i { position: absolute; top: -2px; bottom: -2px; width: 4px; margin-left: -2px; background: var(--text); border-radius: 2px; box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.6); transition: left 0.1s linear; }
+.range-text { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; font-size: 0.75rem; }
+.range-text em { font-style: normal; font-weight: 600; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.range[data-zone="dead"] .range-text em { color: var(--warn); }
+.range-text span { color: var(--muted); }
+.action.unusable img { opacity: 0.2; }
+.action.unusable .short { opacity: 0.4; }
 
 /* An empty place on the bar: only its key, and only visible as a place */
 .action.empty { background: transparent; border-style: dashed; opacity: 0.55; }
