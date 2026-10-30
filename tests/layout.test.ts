@@ -19,7 +19,9 @@ const SWP = 'spell:10894', MB = 'spell:10947', MF = 'spell:18807';
 describe('action bar layout', () => {
   it('gives the class bar its default keys, leaving out spells the character lacks', () => {
     const slots = loadLayout(shadowPriest, new Set([SWP, MB, MF]));
-    expect(slots.map((s) => [s.key, s.hotkey])).toEqual([[SWP, '1'], [MB, '2'], [MF, '3']]);
+    expect(slots.slice(0, 3).map((s) => [s.key, s.hotkey])).toEqual([[SWP, '1'], [MB, '2'], [MF, '3']]);
+    expect(slots.length).toBe(16); // both rows, the other places empty
+    expect(slots.slice(3).every((s) => s.key === '')).toBe(true);
   });
 
   it('swaps two spells, the keys staying with the places', () => {
@@ -55,7 +57,26 @@ describe('two-row action bar', () => {
   it('puts 1 to 8 on the bottom row and Q E R F C X Y T on the one above', () => {
     const keys = loadLayout(shadowPriest, all).map((s) => s.hotkey);
     expect(keys.slice(0, 8)).toEqual(['1', '2', '3', '4', '5', '6', '7', '8']);
-    expect(keys.slice(8)).toEqual(['q', 'e', 'r', 'f', 'c'].slice(0, keys.length - 8));
+    expect(keys.slice(8)).toEqual(['q', 'e', 'r', 'f', 'c', 'x', 'y', 't']);
+  });
+
+  it('moves a spell to an empty place, say from 2 to F, and remembers it', () => {
+    const few = new Set([SWP, MB, MF]);
+    const slots = swapSlots(loadLayout(shadowPriest, few), 1, 11);
+    expect(slots[1].key).toBe('');
+    expect(slots[11]).toMatchObject({ key: MB, hotkey: 'f' });
+    saveLayout(shadowPriest, slots);
+    expect(loadLayout(shadowPriest, few)[11]).toMatchObject({ key: MB, hotkey: 'f' });
+    expect(loadLayout(shadowPriest, few)[1].key).toBe('');
+  });
+
+  it('keeps the place of a spell this character lacks', () => {
+    const slots = swapSlots(loadLayout(shadowPriest, all), 0, 15); // SW:P to T
+    saveLayout(shadowPriest, slots);
+    const without = loadLayout(shadowPriest, new Set([MB, MF]));
+    expect(without[15].key).toBe('');
+    saveLayout(shadowPriest, without);
+    expect(loadLayout(shadowPriest, all)[15].key).toBe(SWP);
   });
 
   it('keeps the order of a bar saved before, with the new keys', () => {
