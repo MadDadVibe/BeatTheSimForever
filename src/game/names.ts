@@ -31,7 +31,18 @@ export function label(key: string): string {
   return OTHER[key] ?? key;
 }
 
+/** A walk's icon: an arrow up towards the boss into melee range, down away from it to shooting range. */
+function arrow(up: boolean): string {
+  const path = up ? 'M32 8 L56 36 H42 V56 H22 V36 H8 Z' : 'M32 56 L56 28 H42 V8 H22 V28 H8 Z';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="${up ? '#2f5f3f' : '#3f3466'}"/><path d="${path}" fill="${up ? '#8ff0ad' : '#cdb6ff'}" stroke="#000" stroke-width="2"/></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+/** Melee attacks reach this far, in yards; a walk to here or closer goes into melee range. */
+const MELEE_YARDS = 5;
+
 export function iconUrl(key: string): string | null {
+  if (key.startsWith('move:')) return arrow(Number(key.slice(5)) <= MELEE_YARDS);
   if (key.startsWith(PET)) key = key.slice(PET.length);
   const [kind, id] = key.split(':');
   const icon = (kind === 'spell' ? names.spell : kind === 'item' ? names.item : {})[id]?.[1];

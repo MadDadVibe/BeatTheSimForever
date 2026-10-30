@@ -170,7 +170,7 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
   navigator.serviceWorker.ready.then((reg) => {
     const loaded = performance.getEntriesByType('resource').map((e) => e.name);
     const engine = ['lib.wasm', 'wasm_exec.js', 'names.json', ...SPECS.map((s) => `presets/${s.key}.json`)].map(simFile);
-    const icons = [...new Set(SPECS.flatMap((s) => [...s.bar.map((b) => b.key), ...s.targetAuras, ...s.playerAuras]))].map(iconUrl).filter((u): u is string => !!u);
+    const icons = [...new Set(SPECS.flatMap((s) => [...s.bar.map((b) => b.key), ...s.targetAuras, ...s.playerAuras]))].map(iconUrl).filter((u): u is string => !!u && !u.startsWith('data:'));
     reg.active?.postMessage({ cache: [location.href.split('#')[0], ...loaded, ...engine, ...icons] });
   });
 }
