@@ -4,8 +4,10 @@ import type { SpecModule } from '../classes/types';
 
 export interface BarSlot { key: string; short: string; hotkey: string }
 
-/** The keys handed out by default, in bar order. */
-export const DEFAULT_HOTKEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'q', 'e', 'r', 't', 'f', 'g', 'z', 'x', 'c', 'v', 'b'];
+/** How many buttons a row of the bar holds. The first row is the bottom one, the next ones go on top of it. */
+export const ROW_LENGTH = 8;
+/** The keys handed out by default, in bar order: 1 to 8 on the bottom row, Q E R F C X Y T above, then a third row. */
+export const DEFAULT_HOTKEYS = ['1', '2', '3', '4', '5', '6', '7', '8', 'q', 'e', 'r', 'f', 'c', 'x', 'y', 't', '9', '0', '-', '=', 'g', 'v', 'b', 'n'];
 /** Keys the game itself uses; they cannot be bound to a spell. */
 const RESERVED = new Set([' ', 'tab', 'escape', 'enter', 'backspace', 'delete', 'f1', 'f2', 'f3', 'shift', 'control', 'alt', 'meta', 'capslock', 'contextmenu']);
 
@@ -18,12 +20,16 @@ export function keyLabel(key: string): string {
 }
 
 interface Saved { order: string[]; keys: Record<string, string> }
-const storageKey = (spec: SpecModule) => `bar:${spec.key}`;
+// "bar2:" since the bar has two rows with their own default keys. A bar saved before ("bar:") keeps its order; its keys
+// were the old defaults (or close to them) and give way to the new ones.
+const storageKey = (spec: SpecModule) => `bar2:${spec.key}`;
 
 function read(spec: SpecModule): Saved | null {
   try {
     const raw = localStorage.getItem(storageKey(spec));
-    return raw ? (JSON.parse(raw) as Saved) : null;
+    if (raw) return JSON.parse(raw) as Saved;
+    const old = localStorage.getItem(`bar:${spec.key}`);
+    return old ? { order: (JSON.parse(old) as Saved).order, keys: {} } : null;
   } catch {
     return null;
   }

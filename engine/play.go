@@ -496,8 +496,9 @@ func (f *liveFight) state() map[string]any {
 		targets = append(targets, targetState{Auras: list})
 	}
 	state["targets"] = targets
-	if hint := f.hint(); hint != "" {
+	if hint, entry := f.hint(); hint != "" {
 		state["hint"] = hint
+		state["hintEntry"] = entry
 		if f.hintTarget >= 0 {
 			state["hintTarget"] = f.hintTarget
 		}
@@ -522,16 +523,17 @@ func (f *liveFight) state() map[string]any {
 
 // hint is the spell the rotation would cast next, as soon as the player is free: the global cooldown, a cast and a
 // channel are taken as over for the question, then put back. What it would do right now during the global cooldown
-// (a move, an attack on the next swing) comes first. Empty without a rotation or before the pull.
-func (f *liveFight) hint() string {
+// (a move, an attack on the next swing) comes first. Empty without a rotation or before the pull. With it comes the
+// index of the rotation's entry that chose it, so the game can light up that line of the priority list.
+func (f *liveFight) hint() (string, int) {
 	s, p := f.sim, f.player
 	f.hintTarget = -1
 	if p.Rotation == nil || s.CurrentTime < 0 {
-		return ""
+		return "", -1
 	}
 	if !p.GCD.IsReady(s) && !p.IsCasting(s) && !p.IsChanneling(s) {
-		if now := f.nextAction(); now != "" {
-			return now
+		if now, entry := f.nextAction(); now != "" {
+			return now, entry
 		}
 	}
 	gcd, hardcast, channel := *p.GCD, p.Hardcast.Expires, p.ChanneledDot
@@ -544,8 +546,9 @@ func (f *liveFight) hint() string {
 	return f.nextAction()
 }
 
-// nextAction is the first entry of the rotation that is ready now, as a spell key ("" when none is).
-func (f *liveFight) nextAction() string {
+// nextAction is the first entry of the rotation that is ready now, as a spell key ("" when none is), and that entry's
+// index in the configured priority list.
+func (f *liveFight) nextAction() (string, int) {
 	s, p := f.sim, f.player
 	configIdx := p.Rotation.PriorityConfigIndexes()
 	for i, action := range p.Rotation.PriorityList() {
@@ -554,21 +557,23 @@ func (f *liveFight) nextAction() string {
 		}
 		// The parsed entry does not say which spell a "channel spell" casts, or where a "move" goes; the config does.
 		var config *proto.APLAction
+		entry := -1
 		if i < len(configIdx) && configIdx[i] < len(f.rotation.GetPriorityList()) {
-			config = f.rotation.PriorityList[configIdx[i]].GetAction()
+			entry = configIdx[i]
+			config = f.rotation.PriorityList[entry].GetAction()
 		}
 		if ch := config.GetChannelSpell(); ch != nil {
 			if spell := f.spellFor(ch.SpellId); spell != nil && spell.IsReady(s) {
-				return key(spell.ActionID)
+				return key(spell.ActionID), entry
 			}
 			continue
 		}
 		if yards, ok := moveRange(config); ok {
-			return moveKey(yards)
+			return moveKey(yards), entry
 		}
 		if config.GetCastPaladinPrimarySeal() != nil {
 			if spell := primarySeal(action); spell != nil {
-				return key(spell.ActionID)
+				return key(spell.ActionID), entry
 			}
 			continue
 		}
@@ -577,7 +582,7 @@ func (f *liveFight) nextAction() string {
 			for _, mcd := range p.GetMajorCooldowns() {
 				if mcd.IsReady(s) && mcd.Spell.Flags.Matches(core.SpellFlagAPL) && mcd.Spell.CanCast(s, p.CurrentTarget) &&
 					!mcd.Type.Matches(core.CooldownTypeSurvival) && (mcd.ShouldActivate == nil || mcd.ShouldActivate(s, p)) {
-					return key(mcd.Spell.ActionID)
+					return key(mcd.Spell.ActionID), entry
 				}
 			}
 			continue
@@ -585,9 +590,9 @@ func (f *liveFight) nextAction() string {
 		for _, spell := range action.GetAllSpells() {
 			if spell.IsReady(s) && spell.Flags.Matches(core.SpellFlagAPL) {
 				f.hintTarget = slices.Index(s.Encounter.TargetUnits, multidotTarget(action))
-				return key(spell.ActionID)
+				return key(spell.ActionID), entry
 			}
 		}
 	}
-	return ""
+	return "", -1
 }

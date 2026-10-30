@@ -50,3 +50,17 @@ describe('action bar layout', () => {
     expect(bindable('F5')).toBe(true);
   });
 });
+
+describe('two-row action bar', () => {
+  it('puts 1 to 8 on the bottom row and Q E R F C X Y T on the one above', () => {
+    const keys = loadLayout(shadowPriest, all).map((s) => s.hotkey);
+    expect(keys.slice(0, 8)).toEqual(['1', '2', '3', '4', '5', '6', '7', '8']);
+    expect(keys.slice(8)).toEqual(['q', 'e', 'r', 'f', 'c'].slice(0, keys.length - 8));
+  });
+
+  it('keeps the order of a bar saved before, with the new keys', () => {
+    store.set('bar:shadow-priest', JSON.stringify({ order: [MF, SWP], keys: { [MF]: '9', [SWP]: '0' } }));
+    const slots = loadLayout(shadowPriest, all);
+    expect(slots.slice(0, 2).map((s) => [s.key, s.hotkey])).toEqual([[MF, '1'], [SWP, '2']]);
+  });
+});

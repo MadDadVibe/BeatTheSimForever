@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120">
+  <!-- A fire lord rising from a lava lake, hammer raised. Our own drawing. -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="45%" r="60%">
+      <stop offset="0" stop-color="#ff9a2e" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#ff5a1f" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="lava" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffcf3f"/>
+      <stop offset="0.5" stop-color="#ff7a1a"/>
+      <stop offset="1" stop-color="#b3260f"/>
+    </linearGradient>
+    <linearGradient id="rock" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6b2a1c"/>
+      <stop offset="1" stop-color="#3a140e"/>
+    </linearGradient>
+    <linearGradient id="flame" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#ff5a1f"/>
+      <stop offset="0.6" stop-color="#ffb02e"/>
+      <stop offset="1" stop-color="#fff1a0"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="120" fill="url(#glow)"/>
+  <!-- hammer -->
+  <g transform="rotate(-28 128 52)">
+    <rect x="125" y="30" width="6" height="70" rx="2" fill="#3a1d12"/>
+    <rect x="110" y="16" width="36" height="20" rx="4" fill="#4a4752"/>
+    <rect x="110" y="16" width="36" height="6" rx="3" fill="#6e6b78"/>
+    <path d="M112 36 L144 36 L140 42 L116 42 Z" fill="#ff8a24"/>
+  </g>
+  <!-- arms -->
+  <path d="M52 78 C34 72 26 58 30 46 C34 40 40 42 40 50 C40 60 48 66 58 68 Z" fill="url(#rock)"/>
+  <path d="M106 76 C118 70 122 58 124 50 L132 50 C132 64 124 78 108 84 Z" fill="url(#rock)"/>
+  <circle cx="34" cy="46" r="7" fill="#4a1a12"/>
+  <circle cx="127" cy="49" r="7" fill="#4a1a12"/>
+  <!-- body -->
+  <path d="M50 108 C46 84 52 62 80 58 C108 62 114 84 110 108 Z" fill="url(#rock)"/>
+  <path d="M66 74 L72 84 L68 94 M94 72 L88 82 L94 92 M80 86 L80 100" stroke="#ffb02e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <!-- flame hair -->
+  <path d="M54 46 C46 28 56 12 62 6 C62 18 66 20 70 14 C72 22 76 10 80 2 C84 10 88 22 90 14 C94 20 98 18 98 6 C104 12 114 28 106 46 Z" fill="url(#flame)"/>
+  <!-- head -->
+  <path d="M60 40 C60 24 100 24 100 40 C100 54 92 64 80 64 C68 64 60 54 60 40 Z" fill="#7a3020"/>
+  <!-- horns -->
+  <path d="M62 34 C52 30 46 20 48 10 C54 18 60 22 66 26 Z" fill="#2e2a33"/>
+  <path d="M98 34 C108 30 114 20 112 10 C106 18 100 22 94 26 Z" fill="#2e2a33"/>
+  <!-- angry brows and eyes -->
+  <path d="M64 36 L76 40" stroke="#2a0d08" stroke-width="3" stroke-linecap="round"/>
+  <path d="M96 36 L84 40" stroke="#2a0d08" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="71" cy="43" rx="4.5" ry="3.2" fill="#fff36b"/>
+  <ellipse cx="89" cy="43" rx="4.5" ry="3.2" fill="#fff36b"/>
+  <circle cx="72" cy="43.5" r="1.4" fill="#7a1d0c"/>
+  <circle cx="88" cy="43.5" r="1.4" fill="#7a1d0c"/>
+  <!-- big flame moustache and a shouting mouth -->
+  <path d="M80 52 C72 48 62 50 56 58 C64 56 70 58 74 56 Z" fill="url(#flame)"/>
+  <path d="M80 52 C88 48 98 50 104 58 C96 56 90 58 86 56 Z" fill="url(#flame)"/>
+  <ellipse cx="80" cy="58" rx="5" ry="4" fill="#2a0d08"/>
+  <path d="M77 56 L79 58 L81 56 L83 58" stroke="#fff1a0" stroke-width="1" fill="none"/>
+  <!-- lava lake -->
+  <path d="M0 100 C14 94 24 104 38 98 C52 92 62 104 78 98 C94 92 104 104 120 98 C134 92 146 102 160 96 L160 120 L0 120 Z" fill="url(#lava)"/>
+  <circle cx="26" cy="108" r="3" fill="#fff1a0" opacity="0.8"/>
+  <circle cx="132" cy="110" r="2.5" fill="#fff1a0" opacity="0.8"/>
+  <circle cx="96" cy="114" r="2" fill="#fff1a0" opacity="0.7"/>
+</svg>
