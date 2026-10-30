@@ -218,7 +218,7 @@ class FightScreen {
         this.el.side.querySelectorAll('[role=tab]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
         try { localStorage.setItem('sideTab', t); } catch { /* not remembered */ }
       }));
-    this.el.meterList.innerHTML = this.meter.html(0);
+    this.meter.render(this.el.meterList, 0);
     this.el.hintToggle.addEventListener('click', () => {
       this.hints = !this.hints;
       this.el.hintToggle.setAttribute('aria-pressed', String(this.hints));
@@ -547,7 +547,7 @@ class FightScreen {
     }
     if (this.phase === 'fight' && performance.now() - this.meterDrawn > 250) {
       this.meterDrawn = performance.now();
-      this.el.meterList.innerHTML = this.meter.html(Math.max(0, t));
+      this.meter.render(this.el.meterList, Math.max(0, t));
     }
   }
 
