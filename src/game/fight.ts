@@ -60,6 +60,9 @@ const BLOCK_TEXT: Record<CastBlock, string> = {
 interface Button { key: string; short: string; spell: LiveSpell; hotkey: string; el: HTMLButtonElement }
 
 type Phase = 'prep' | 'fight';
+
+/** A phone held upright: in the fight its action bar leaves out columns with no spell (desktop keeps them all). */
+const COMPACT_BAR = matchMedia('(max-width: 600px) and (orientation: portrait)');
 type Tab = 'prio' | 'meter';
 
 function savedTab(): Tab {
@@ -174,10 +177,6 @@ class FightScreen {
             auf einen Spell zeigen (am Handy antippen) und eine Taste drücken legt die Taste neu fest; Rücktaste entfernt sie.</p>
           <button class="ready" data-el="ready" type="button">Bereit <small>(Leertaste)</small></button>
         </section>
-        <section class="focus">
-          <span class="focus-name" data-el="focusName"></span>
-          <div class="auras big" data-el="focusAuras"></div>
-        </section>
         <aside class="side" data-tab="${tab}" data-el="side">
           <div class="tabs" role="tablist">
             <button type="button" role="tab" data-tab="prio" aria-selected="${tab === 'prio'}">Prioliste</button>
@@ -234,7 +233,13 @@ class FightScreen {
     this.el.bar.innerHTML = '';
     this.buttons = [];
     this.places = [];
+    this.queued = null;
     const rows = Math.max(1, Math.ceil(this.slots.length / ROW_LENGTH));
+    // On a phone held upright, once the fight is on, a column whose places are all empty makes room for the others.
+    const all = Array.from({ length: ROW_LENGTH }, (_, c) => c);
+    const used = all.filter((c) => this.slots.some((s, i) => i % ROW_LENGTH === c && s.key));
+    const cols = this.phase === 'fight' && COMPACT_BAR.matches && used.length ? used : all;
+    this.el.bar.style.gridTemplateColumns = `repeat(${cols.length}, minmax(0, 1fr))`;
     this.slots.forEach((slot, i) => {
       const spell = this.spells.find((s) => s.key === slot.key);
       const el = document.createElement('button');
@@ -243,7 +248,8 @@ class FightScreen {
       el.dataset.slot = String(i);
       // The first row is the bottom one; each further row goes on top.
       el.style.gridRow = String(rows - Math.floor(i / ROW_LENGTH));
-      el.style.gridColumn = String((i % ROW_LENGTH) + 1);
+      el.style.gridColumn = String(cols.indexOf(i % ROW_LENGTH) + 1);
+      el.hidden = !cols.includes(i % ROW_LENGTH);
       el.classList.toggle('pointed', this.pointed === i);
       this.el.bar.appendChild(el);
       this.places.push(el);
@@ -322,6 +328,8 @@ class FightScreen {
     return el?.dataset.slot ? Number(el.dataset.slot) : null;
   }
 
+  private onCompactChange = () => this.renderBar();
+
   /** Ready: the countdown starts. */
   private begin() {
     if (this.phase !== 'prep') return;
@@ -329,6 +337,8 @@ class FightScreen {
     this.phase = 'fight';
     this.point(null);
     this.el.fight.classList.remove('prepping');
+    this.renderBar(); // on a phone, without the empty columns
+    COMPACT_BAR.addEventListener('change', this.onCompactChange);
     this.startedAt = performance.now();
     // Keep the screen on during the fight.
     navigator.wakeLock?.request('screen').then((l) => (this.wakeLock = l), () => {});
@@ -474,12 +484,9 @@ class FightScreen {
       this.root.querySelector(`[data-boss="${i}"]`)!.classList.toggle('targeted', i === this.target);
       // The hinted spell is a DoT the sim would put on this boss.
       this.root.querySelector(`[data-boss="${i}"]`)!.classList.toggle('hinted', this.hints && this.setup.targets > 1 && s.hint !== undefined && s.hintTarget === i);
-      this.el['bossAuras' + i].innerHTML = auraIcons(spec.targetAuras, s.targets[i]?.auras ?? [], since);
+      // The effects to keep up on each boss, in its frame; one that is missing shows dimmed.
+      this.el['bossAuras' + i].innerHTML = auraIcons(spec.targetAuras, s.targets[i]?.auras ?? [], since, true);
     }
-
-    // The boss you aim at, large
-    this.el.focusName.textContent = this.setup.targets > 1 ? `Ziel: ${BOSSES[this.target].name}` : '';
-    this.el.focusAuras.innerHTML = auraIcons(spec.targetAuras, s.targets[this.target]?.auras ?? [], since, true);
 
     // You
     this.el.playerAuras.innerHTML = auraIcons(spec.playerAuras, s.auras, since);
@@ -587,6 +594,7 @@ class FightScreen {
     window.removeEventListener('pointermove', this.onDragMove);
     window.removeEventListener('pointerup', this.onDragEnd);
     window.removeEventListener('pointercancel', this.onDragEnd);
+    COMPACT_BAR.removeEventListener('change', this.onCompactChange);
     void this.wakeLock?.release().catch(() => {});
     const duration = Math.max(0.1, abandoned ? this.now() : this.state.time);
     this.finish({ setup: this.setup, duration, timeline: this.events, abandoned });
